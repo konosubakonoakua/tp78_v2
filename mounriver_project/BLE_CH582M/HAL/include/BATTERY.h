@@ -1,10 +1,12 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : BATTERY.h
-* Author             : ChnMasterOG
-* Version            : V1.0
-* Date               : 2021/12/15
-* Description        :
-*******************************************************************************/
+ * File Name          : BATTERY.h
+ * Author             : ChnMasterOG
+ * Version            : V1.0
+ * Date               : 2022/1/26
+ * Description        : 电池ADC采样头文件
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
+ *******************************************************************************/
 
 #ifndef BATTERY_H
 #define BATTERY_H
@@ -26,8 +28,12 @@
 
   #define BAT_FLOATING_VAL    50    // ADC浮动超过该值则警告
 
-  #define BAT_CHRG_PIN        GPIO_Pin_17
+  #define BAT_ADC_PIN         GPIO_Pin_8    // GPIOA
+  #define BAT_CHRG_PIN        GPIO_Pin_16   // GPIOB
+  #define BAT_COM_PIN         GPIO_Pin_17   // GPIOB
   #define BAT_IS_CHARGING     !(R32_PB_PIN & BAT_CHRG_PIN)
+  #define BAT_ADC_ENA()       GPIOB_SetBits(BAT_COM_PIN)
+  #define BAT_ADC_DIS()       GPIOB_ResetBits(BAT_COM_PIN)
 
   void BATTERY_Init( void );
   void BATTERY_DMA_ENABLE( void );

@@ -1,9 +1,11 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : USB.c
- * Author             : ChnMasterOG
+ * Author             : ChnMasterOG, sakumisu
  * Version            : V1.1
  * Date               : 2023/2/4
  * Description        : CherryUSBÇý¶¯
+ * Copyright (c) 2023 ChnMasterOG
+ * Copyright (c) 2022, sakumisu
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 

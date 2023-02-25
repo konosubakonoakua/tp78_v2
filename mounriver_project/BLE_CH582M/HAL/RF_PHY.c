@@ -4,6 +4,7 @@
  * Version            : V1.0
  * Date               : 2022/11/13
  * Description        : RF 2.4G”¶”√≥Ã–Ú
+ * Copyright (c) 2023 ChnMasterOG
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/

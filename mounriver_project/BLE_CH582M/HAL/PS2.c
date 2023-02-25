@@ -4,6 +4,7 @@
  * Version            : V2.0
  * Date               : 2022/11/30
  * Description        : PS/2驱动源文件
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
@@ -217,7 +218,7 @@ void PS2_IT_handler(void)
 //    }
     } else if (PS2_bit_cnt == 11) {   //停止位
       if ((PS2_byte_cnt == 0 && (PS2_byte & 0x8)) || PS2_byte_cnt > 0) {    //检查Always1位是否为1
-        if ( PS2_byte_cnt > 0 ) ((Mouse_Data_t*)HIDMouse)->data[PS2_byte_cnt] = PS2_byte;  //小红点不接受按键信息
+        if ( PS2_byte_cnt > 0 ) MouseDat->data[PS2_byte_cnt] = PS2_byte;  //小红点不接受按键信息
         PS2_byte_cnt++;
       }
       PS2_Dis_Data_Report();

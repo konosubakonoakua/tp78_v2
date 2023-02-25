@@ -4,6 +4,8 @@
  * Version            : V1.0
  * Date               : 2023/2/5
  * Description        : FatFs”¶”√≤„«˝∂Ø
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #ifndef __FATFS_H
@@ -25,6 +27,8 @@
   void HAL_Fs_Create_keyboard_cfg(uint8_t len, uint8_t* p_cfg);
   void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg);
   void HAL_Fs_Read_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg);
+  void HAL_Fs_Write_keyboard_spkey(uint8_t* hid_arr);
+  void HAL_Fs_Read_keyboard_spkey(uint8_t* hid_arr);
   void HAL_Fs_Write_keyboard_mat(const uint8_t* fp, const uint8_t* key_arr);
   void HAL_Fs_Read_keyboard_mat(const uint8_t* fp, uint8_t* key_arr);
 

@@ -4,6 +4,7 @@
  * Version            : V1.1
  * Date               : 2022/1/26
  * Description        : OLED字体源文件
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************
  * Attention          :

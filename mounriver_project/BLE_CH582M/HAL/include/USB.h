@@ -4,6 +4,8 @@
  * Version            : V1.0
  * Date               : 2021/11/17
  * Description        : USB驱动头文件
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #ifndef __USB_H

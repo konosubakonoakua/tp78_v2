@@ -1,12 +1,12 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : CORE.c
-* Author             : ChnMasterOG
-* Version            : V1.1
-* Date               : 2022/12/24
-* Description        : 上下电、MCU Sleep相关控制
-* Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* SPDX-License-Identifier: GPL-3.0
-*******************************************************************************/
+ * File Name          : CORE.c
+ * Author             : ChnMasterOG
+ * Version            : V1.1
+ * Date               : 2022/12/24
+ * Description        : 上下电、MCU Sleep相关控制
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
+ *******************************************************************************/
 
 #include "HAL.h"
 

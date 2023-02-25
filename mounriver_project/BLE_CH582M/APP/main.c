@@ -1,12 +1,13 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : main.c
-* Author             : ChnMasterOG, WCH
-* Version            : V2.0
-* Date               : 2022/11/30
-* Description        : 应用层 - TP78小红点+蓝牙+2.4G三模键盘应用主函数及任务系统初始化
-* Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* SPDX-License-Identifier: GPL-3.0
-*******************************************************************************/
+ * File Name          : main.c
+ * Author             : ChnMasterOG, WCH
+ * Version            : V2.0
+ * Date               : 2022/11/30
+ * Description        : 应用层 - TP78小红点+蓝牙+2.4G三模键盘应用主函数及任务系统初始化
+ * Copyright (c) 2023 ChnMasterOG
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * SPDX-License-Identifier: GPL-3.0
+ *******************************************************************************/
 
 /********************************** (C) COPYRIGHT *******************************
  *  Pin information:
@@ -95,6 +96,7 @@ int main( void )
   tmos_start_task( halTaskID, MPR121_EVENT, 10 );  // MPR121
 #endif
   tmos_start_task( halTaskID, SYST_EVENT, 10 );  // 系统定时
+//  tmos_start_task( halTaskID, HAL_TEST_EVENT, 10 );
   Main_Circulation();
 }
 

@@ -4,6 +4,8 @@
  * Version            : V1.1
  * Date               : 2021/12/23
  * Description        : 机械键盘驱动头文件
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #ifndef __KEYBOARD_H
@@ -127,10 +129,18 @@
     #define KEY_RightAlt    0xE6
     #define KEY_RightGUI    0xE7
 
-    //矮轴
+    //键盘发送鼠标键
     #define KEY_MouseL      0xF0
     #define KEY_MouseR      0xF1
     #define KEY_MouseM      0xF2
+
+    //复合键
+    #define SP_KEY_NUMBER       5     // 复合键个数
+    #define KEY_SP_1            0xF3
+    #define KEY_SP_2            0xF4
+    #define KEY_SP_3            0xF5
+    #define KEY_SP_4            0xF6
+    #define KEY_SP_5            0xF5
 
     //Fn功能
     #define Fn_Mode_None                  0x00
@@ -157,32 +167,17 @@
     #define Fn_Mode_PaintedEgg            0xFE
     #define Fn_Mode_GiveUp                0xFF
 
-    typedef union {
-        struct {
-            unsigned char LeftCTRL : 1;
-            unsigned char LeftShift : 1;
-            unsigned char LeftAlt : 1;
-            unsigned char LeftGUI : 1;
-            unsigned char RightCTRL : 1;
-            unsigned char RightShift : 1;
-            unsigned char RightAlt : 1;
-            unsigned char RightGUI : 1;
-            unsigned char Reserved : 8;
-            unsigned char Key1 : 8;
-            unsigned char Key2 : 8;
-            unsigned char Key3 : 8;
-            unsigned char Key4 : 8;
-            unsigned char Key5 : 8;
-            unsigned char Key6 : 8;
-            };
-        uint8_t data[8];
-    }Keyboardstate;
+    typedef struct _Keyboard_Status_t {
+        uint8_t changeBL : 1;
+        uint8_t Fn : 1;
+        uint8_t SP_Key : 3;
+        uint8_t reserved : 3;
+    }Keyboard_Status_t;
 
     extern uint32_t Row_Pin_ALL, Colum_Pin_ALL;
     extern uint8_t CustomKey[COL_SIZE][ROW_SIZE];
     extern uint8_t Extra_CustomKey[COL_SIZE][ROW_SIZE];
-    extern uint8_t LED_Change_flag;
-    extern Keyboardstate* const Keyboarddat;
+    extern Keyboard_Status_t keyboard_status;
 
     void KEYBOARD_Reset( void );
     UINT8 KEYBOARD_Custom_Function( void );

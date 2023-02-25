@@ -1,13 +1,14 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : BLE.c
-* Author             : ChnMasterOG, WCH
-* Version            : V1.3
-* Date               : 2022/2/26
-* Description        : 蓝牙键鼠应用程序，初始化广播连接参数，然后广播，直至连接主机
-* Ref                : https://software-dl.ti.com/lprf/simplelink_cc2640r2_latest/docs/blestack/ble_user_guide/html/ble-stack-3.x-guide/index.html
-* Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* SPDX-License-Identifier: GPL-3.0
-*******************************************************************************/
+ * File Name          : BLE.c
+ * Author             : ChnMasterOG, WCH
+ * Version            : V1.3
+ * Date               : 2022/2/26
+ * Description        : 蓝牙键鼠应用程序，初始化广播连接参数，然后广播，直至连接主机
+ * Ref                : https://software-dl.ti.com/lprf/simplelink_cc2640r2_latest/docs/blestack/ble_user_guide/html/ble-stack-3.x-guide/index.html
+ * Copyright (c) 2023 ChnMasterOG
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * SPDX-License-Identifier: GPL-3.0
+ *******************************************************************************/
 
 
 /*********************************************************************

@@ -1,11 +1,12 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : snake.c
-* Author             : ChnMasterOG
-* Version            : V1.0
-* Date               : 2022/1/27
-* Description        : 应用层 - 贪吃蛇游戏
-* SPDX-License-Identifier: GPL-3.0
-*******************************************************************************/
+ * File Name          : snake.c
+ * Author             : ChnMasterOG
+ * Version            : V1.0
+ * Date               : 2022/1/27
+ * Description        : 应用层 - 贪吃蛇游戏源文件
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
+ *******************************************************************************/
 
 #include "HAL.h"
 #include <stdlib.h>

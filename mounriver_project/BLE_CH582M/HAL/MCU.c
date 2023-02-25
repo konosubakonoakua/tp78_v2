@@ -4,11 +4,10 @@
  * Version            : V1.2
  * Date               : 2022/1/26
  * Description        : 硬件任务处理函数及BLE和硬件初始化
+ * Copyright (c) 2023 ChnMasterOG
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
-
-/******************************************************************************/
 
 #include "APP.h"
 #include "HAL.h"
@@ -46,7 +45,7 @@ static uint32_t idle_cnt = 0;    // 无有效操作计数值，idle_cnt大于阈值则进入休眠
 static void TP78_Idle_Clr(void)
 {
   if (idle_cnt >= IDLE_MAX_PERIOD) {  // 退出idle
-#ifdef HAL_OLED
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
     OLED_UI_idle(0);
 #endif
     idle_cnt = 0;
@@ -75,6 +74,7 @@ __attribute__((weak)) void HID_KEYBOARD_Process(void)
     }
     else {
       if ( KEYBOARD_Custom_Function() ) { // 带有Fn键处理信息则不产生键盘事件
+        TP78_Idle_Clr();
         if ( g_Ready_Status.usb == TRUE && priority_USB == TRUE ) {
           tmos_set_event( usbTaskID, USB_KEYBOARD_EVENT );  // USB键盘事件
         } else if ( g_Ready_Status.ble == TRUE ) {
@@ -85,6 +85,7 @@ __attribute__((weak)) void HID_KEYBOARD_Process(void)
       }
       if (g_Ready_Status.keyboard_mouse_data == TRUE) { // 发送键盘鼠标数据
         g_Ready_Status.keyboard_mouse_data = FALSE;
+        TP78_Idle_Clr();
         tmos_memset(&HIDMouse[1], 0, 3);   // 只按左中右键没有其他操作
         if ( g_Ready_Status.usb == TRUE && priority_USB == TRUE ) {
           tmos_set_event( usbTaskID, USB_MOUSE_EVENT );  //USB鼠标事件
@@ -130,7 +131,6 @@ __attribute__((weak)) void HID_PS2TP_Process(void)
 * Input          : 无
 * Return         : 无
 *******************************************************************************/
-
 __attribute__((weak)) void HID_I2CTP_Process(void)
 {
   if (g_Ready_Status.i2ctp_data == TRUE && g_Enable_Status.tp == TRUE) {    // 发送小红点鼠标数据
@@ -203,7 +203,7 @@ __attribute__((weak)) void SW_PaintedEgg_Process(void)
     TP78_Idle_Clr();
     g_Ready_Status.keyboard_key_data = FALSE;
     if (KEYBOARD_Custom_Function() != 0) {
-      switch (Keyboarddat->Key1) {
+      switch (KeyboardDat->Key1) {
         case KEY_W: BodyDir[0] = DirUp; break;
         case KEY_S: BodyDir[0] = DirDown; break;
         case KEY_A: BodyDir[0] = DirLeft; break;
@@ -409,6 +409,7 @@ __attribute__((weak)) void SW_OLED_UBStatus_Process(void)
 *******************************************************************************/
 __attribute__((weak)) void HW_Battery_Process(void)
 {
+  BAT_ADC_DIS();
   BATTERY_ADC_Calculation( );
 #if (defined HAL_OLED)  && (HAL_OLED == TRUE)
   if ( EnterPasskey_flag == FALSE ) { // 绘制电池
@@ -420,6 +421,7 @@ __attribute__((weak)) void HW_Battery_Process(void)
     else OLED_UI_add_default_task(OLED_UI_FLAG_BAT_CLR_CHARGE);
   }
 #endif
+  BAT_ADC_ENA();
   BATTERY_DMA_ENABLE( );  // DMA使能
 }
 
@@ -730,11 +732,11 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
     // 鼠标处理
 #if ((defined HAL_PS2) && (HAL_PS2 == TRUE)) || ((defined HAL_I2C_TP) && (HAL_I2C_TP == TRUE)) || ((defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE))
 #if (defined HAL_PS2) && (HAL_PS2 == TRUE)
-    HID_PS2TP_Process(),
+    HID_PS2TP_Process();
 #elif (defined HAL_I2C_TP) && (HAL_I2C_TP == TRUE)
-    HID_I2CTP_Process(),
+    HID_I2CTP_Process();
 #else  // default MPR121 cap mouse
-    HID_CapMouse_Process(),
+    HID_CapMouse_Process();
 #endif
 #endif
     // 键盘处理
@@ -766,13 +768,13 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
   {
     ++idle_cnt;
     if (idle_cnt == IDLE_MAX_PERIOD) {  // 进入idle
-#ifdef HAL_OLED
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
       OLED_UI_idle(1);
 #endif
     }
     if (idle_cnt >= LP_MAX_PERIOD) {  // 进入低功耗模式
       idle_cnt = 0;
-#ifdef HAL_OLED
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
       OLED_WR_Byte(0xAE, OLED_CMD);  // display off
 #endif
       GotoLowpower(shutdown_mode);
@@ -787,7 +789,7 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
 #if (defined HAL_WS2812_PWM) && (HAL_WS2812_PWM == TRUE)
     HW_WS2812_Process();
 #endif
-    tmos_start_task( halTaskID, WS2812_EVENT, MS1_TO_SYSTEM_TIME(60) ); // 60ms周期控制背光
+    tmos_start_task( halTaskID, WS2812_EVENT, MS1_TO_SYSTEM_TIME(80) ); // 80ms周期控制背光
     return events ^ WS2812_EVENT;
   }
 
@@ -906,12 +908,6 @@ void HAL_Init()
 #endif
 #if (defined HAL_HW_I2C) && (HAL_HW_I2C == TRUE)
   HW_I2C_Init( );
-#if (defined HAL_I2C_TP) && (HAL_I2C_TP == TRUE)  // I2C_TP is used by HW I2C
-  I2C_TP_Init(debug_info);
-#endif
-#if ((defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE)) || ((defined HAL_MPR121_TOUCHBAR) && (HAL_MPR121_TOUCHBAR == TRUE))
-  MPR121_Init(debug_info);
-#endif
 #endif
 #if (defined HAL_OLED) && (HAL_OLED == TRUE)
   HAL_OLED_Init( );
@@ -930,6 +926,7 @@ void HAL_Init()
 #endif
 #if (defined HAL_WS2812_PWM) && (HAL_WS2812_PWM == TRUE)
   WS2812_PWM_Init( );
+  DATAFLASH_Read_LEDStyle( );
 #endif
 #if (defined HAL_MOTOR) && (HAL_MOTOR == TRUE)
   MOTOR_Init( );
@@ -939,6 +936,14 @@ void HAL_Init()
 #endif
 #if (defined HAL_RF) && (HAL_RF == TRUE) && !(defined TEST)
   DATAFLASH_Read_RForBLE( );
+#endif
+#if (defined HAL_HW_I2C) && (HAL_HW_I2C == TRUE)  // 最后初始化保证上电延迟
+#if (defined HAL_I2C_TP) && (HAL_I2C_TP == TRUE)  // I2C_TP is used by HW I2C
+  I2C_TP_Init(debug_info);
+#endif
+#if ((defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE)) || ((defined HAL_MPR121_TOUCHBAR) && (HAL_MPR121_TOUCHBAR == TRUE))  // MPR121需要上电延迟
+  MPR121_Init(debug_info);
+#endif
 #endif
 #if (defined HAL_LED) && (HAL_LED == TRUE)
   debug_info[7] = '\0';

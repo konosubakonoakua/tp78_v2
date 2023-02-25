@@ -1,10 +1,13 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : BLE.h
-* Author             : ChnMasterOG
-* Version            : V1.2
-* Date               : 2022/1/27
-* Description        : 
-*******************************************************************************/
+ * File Name          : BLE.h
+ * Author             : ChnMasterOG, WCH
+ * Version            : V1.3
+ * Date               : 2022/2/26
+ * Description        :
+ * Copyright (c) 2023 ChnMasterOG
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * SPDX-License-Identifier: GPL-3.0
+ *******************************************************************************/
 
 #ifndef BLE_H
 #define BLE_H

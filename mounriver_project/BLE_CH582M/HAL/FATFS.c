@@ -4,6 +4,7 @@
  * Version            : V1.0
  * Date               : 2023/2/5
  * Description        : FatFs应用层驱动
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
@@ -15,16 +16,21 @@ const BYTE WriteBuffer[] = {
     "---TP78改键说明---\n"
     "改键后需要重启键盘生效(Fn+R)\n"
     "---文件目录说明(数字均为十进制)---\n"
-    "keyboard_cfg.txt---存放键盘配置\n"
-    "按行顺序分别表示:\n"
-    "默认蓝牙设备(1~4)\n"
-    "默认LED模式(0~4)\n"
-    "是否启用RF(0~1)\n"
-    "MPR_alg_magic\n"
-    "MPR_touchbar_tou_thr\n"
-    "MPR_touchbar_rel_thr\n"
-    "MPR_capmouse_tou_thr\n"
-    "MPR_capmouse_rel_thr\n"
+    "keyboard_cfg.txt---存放键盘配置(每行1byte)\n"
+    "LINE1:默认蓝牙设备(1~4)\n"
+    "LINE2:默认LED模式(0~4)\n"
+    "LINE3:是否启用RF(0~1)\n"
+    "LINE4:MPR_alg_magic\n"
+    "LINE5:MPR_touchbar_tou_thr\n"
+    "LINE6:MPR_touchbar_rel_thr\n"
+    "LINE7:MPR_capmouse_tou_thr\n"
+    "LINE8:MPR_capmouse_rel_thr\n"
+    "keyboard_spkey.txt---存放sp按键映射键位(每行8byte)\n"
+    "LINE1:spKEY1的HID报表数据\n"
+    "LINE2:spKEY2的HID报表数据\n"
+    "LINE3:spKEY3的HID报表数据\n"
+    "LINE4:spKEY4的HID报表数据\n"
+    "LINE5:spKEY5的HID报表数据\n"
     "keyboard_mat.txt---存放键盘按键映射\n"
     "keyboard_ext_mat.txt---存放键盘层2按键映射\n"
 };
@@ -56,7 +62,10 @@ void HAL_Fs_Init(char* debug_info)
 #ifdef FIRST_USED // 出产设置
       res_flash = f_open( &fnew, "0:readme.txt", FA_CREATE_ALWAYS | FA_WRITE );               // 以写入方式打开文件，若未发现文件则新建文件
       if( res_flash == FR_OK ) {
-        res_flash = f_write( &fnew, WriteBuffer, strlen(WriteBuffer), &fnum );                // 写向文件内写入指定数据
+        /* 分两部分写 */
+        res_flash = f_write( &fnew, WriteBuffer, sizeof(WriteBuffer)/2, &fnum );              // part1
+        res_flash = f_write( &fnew, &WriteBuffer[sizeof(WriteBuffer)/2],
+                             sizeof(WriteBuffer) - sizeof(WriteBuffer)/2 - 1, &fnum );        // part2
         f_close(&fnew);                                                                       // 关闭文件
         g_Ready_Status.fatfs = TRUE;
       }
@@ -254,6 +263,88 @@ void HAL_Fs_Read_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg)
 }
 
 /*******************************************************************************
+* Function Name  : HAL_Fs_Write_keyboard_spkey
+* Description    : 写入键盘sp按键映射
+* Input          : hid_arr: HID keyboard报文, 每个sp按键8字节, 一共SP_KEY_NUMBER*8字节
+* Return         : None
+*******************************************************************************/
+void HAL_Fs_Write_keyboard_spkey(uint8_t* hid_arr)
+{
+  FATFS fs;
+  FIL fnew;
+  FRESULT res_flash;
+  FILINFO fnow;
+  UINT fnum;
+
+  uint8_t i, j, len;
+  uint8_t wr_buf[512];  // 最大4*COL_SIZE*ROW_SIZE
+
+  if (g_Ready_Status.fatfs == FALSE) return;
+
+  res_flash = f_mount( &fs, "0:", 1 );
+  if ( res_flash != FR_OK ) return;
+
+  res_flash = f_open( &fnew, "0:keyboard_spkey.txt", FA_CREATE_ALWAYS | FA_WRITE );
+  if ( res_flash != FR_OK ) goto fs_write_kbd_spkey_end;
+
+  len = 0;
+  for (i = 0; i < SP_KEY_NUMBER; i++) {
+    for (j = 0; j < 8; j++) {
+      if (j == 7) len += u8_dec_to_string(hid_arr[j + i * 8], &wr_buf[len], 2);
+      else len += u8_dec_to_string(hid_arr[j + i * 8], &wr_buf[len], 1);
+    }
+  }
+
+  f_write( &fnew, wr_buf, len, &fnum );
+
+  f_close(&fnew);
+
+  fs_write_kbd_spkey_end:
+  f_mount( NULL, "0:", 1 );                                    // 卸载文件系统
+}
+
+/*******************************************************************************
+* Function Name  : HAL_Fs_Read_keyboard_spkey
+* Description    : 读取键盘sp按键映射
+* Input          : hid_arr: HID keyboard报文, 每个sp按键8字节, 一共SP_KEY_NUMBER*8字节
+* Return         : None
+*******************************************************************************/
+void HAL_Fs_Read_keyboard_spkey(uint8_t* hid_arr)
+{
+  FATFS fs;
+  FIL fnew;
+  FRESULT res_flash;
+  FILINFO fnow;
+  UINT fnum;
+
+  uint8_t i, j, len;
+  uint8_t rd_buf[512];  // 最大4*COL_SIZE*ROW_SIZE
+
+  if (g_Ready_Status.fatfs == FALSE) return;
+
+  res_flash = f_mount( &fs, "0:", 1 );
+  if ( res_flash != FR_OK ) return;
+
+  res_flash = f_open(&fnew, "0:keyboard_spkey.txt", FA_OPEN_EXISTING | FA_READ );
+  if ( res_flash != FR_OK ) goto fs_read_kbd_spkey_end;    // 文件不存在
+
+  res_flash = f_read(&fnew, rd_buf, sizeof(rd_buf), &fnum);
+  if ( res_flash == FR_OK ) {
+    len = 0;
+    for (i = 0; i < SP_KEY_NUMBER; i++) {
+      for (j = 0; j < 8; j++) {
+        len += string_dec_to_u8(&rd_buf[len], &hid_arr[j + i * 8]);
+      }
+    }
+  }
+
+  f_close(&fnew);
+
+  fs_read_kbd_spkey_end:
+  f_mount( NULL, "0:", 1 );                                    // 卸载文件系统
+}
+
+/*******************************************************************************
 * Function Name  : HAL_Fs_Write_keyboard_mat
 * Description    : 写入键盘布局
 * Input          : fp - 文件系统路径: 如"0:keyboard_mat.txt", "0:keyboard_ext_mat.txt"
@@ -323,6 +414,7 @@ void HAL_Fs_Read_keyboard_mat(const uint8_t* fp, uint8_t* key_arr)
 
   res_flash = f_read(&fnew, rd_buf, sizeof(rd_buf), &fnum);
   if ( res_flash == FR_OK ) {
+    len = 0;
     for (i = 0; i < ROW_SIZE; i++) {
       for (j = 0; j < COL_SIZE; j++) {
         len += string_dec_to_u8(&rd_buf[len], &key_arr[i + j * ROW_SIZE]);

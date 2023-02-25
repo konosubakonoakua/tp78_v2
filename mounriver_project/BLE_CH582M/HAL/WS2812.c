@@ -3,7 +3,8 @@
  * Author             : ChnMasterOG
  * Version            : V1.2
  * Date               : 2022/4/13
- * Description        : WS2812驱动源代码
+ * Description        : WS2812驱动源文件
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
@@ -25,7 +26,7 @@ uint8_t DATAFLASH_Read_LEDStyle( void )
 {
   uint8_t LED_Style_Number;
   HAL_Fs_Read_keyboard_cfg(FS_LINE_LED_STYLE, 1, &LED_Style_Number);
-  LED_Change_flag = 1;
+  keyboard_status.changeBL = TRUE;
   switch (LED_Style_Number)
   {
     case 0:
@@ -324,8 +325,8 @@ void WS2812_Send( void )
 {
   uint16_t i;
 
-  if ( LED_Change_flag != 0 ) {
-    LED_Change_flag = 0;
+  if ( keyboard_status.changeBL == TRUE ) {
+    keyboard_status.changeBL = FALSE;
     for (i = 0; i < LED_Number; i++) {  // memory set zero
       LED_BYTE_Buffer[i][0] = LED_BYTE_Buffer[i][1] = LED_BYTE_Buffer[i][2] = 0;
     }
@@ -335,10 +336,9 @@ void WS2812_Send( void )
     led_style_func( ); // 调用变化函数
   }
 
-  { // WCH CH582M bug: 不重启定时器发送PWM+DMA偶现第一个非空Byte丢失
-    TMR1_Disable();
-    TMR1_PWMActDataWidth(0);
-    TMR1_Enable();
+  { // WCH CH582M bug: 不重新初始化TMR_PWM则发送PWM+DMA偶现第一个非空Byte丢失
+    TMR1_PWMInit( High_Level, PWM_Times_1 );
+    TMR1_PWMCycleCfg( 75 );        // 周期 1.25us
   }
   TMR1_DMACfg( ENABLE, (UINT16) (UINT32) LED_DMA_Buffer, (UINT16) (UINT32) (LED_DMA_Buffer + LED_Number*24 + RESET_FRAME_SIZE), Mode_Single );  // 启用DMA转换，从内存到外设
 }

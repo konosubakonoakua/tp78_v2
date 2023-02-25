@@ -4,6 +4,8 @@
  * Version            : V1.0
  * Date               : 2023/1/2
  * Description        : i2cÐ¡ºìµãÇý¶¯
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #ifndef __I2C_TP_H

@@ -4,6 +4,9 @@
  * Version            : V1.10
  * Date               : 2022/11/13
  * Description        : 配置说明及默认值，建议在工程配置里的预处理中修改当前值
+ * Copyright (c) 2023 ChnMasterOG
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 /******************************************************************************/
@@ -92,7 +95,7 @@
 #define HAL_PS2                     FALSE         // PS/2小红点
 #endif
 #ifndef HAL_KEYBOARD
-#define HAL_KEYBOARD                FALSE          // 键盘
+#define HAL_KEYBOARD                TRUE          // 键盘
 #endif
 #ifndef HAL_OLED
 #define HAL_OLED                    TRUE          // OLED
@@ -122,7 +125,7 @@
 #define HAL_MPR121_CAPMOUSE         FALSE          // MPR121触摸板
 #endif
 #ifndef HAL_MPR121_TOUCHBAR
-#define HAL_MPR121_TOUCHBAR         FALSE          // MPR121触摸条
+#define HAL_MPR121_TOUCHBAR         TRUE          // MPR121触摸条
 #endif
 #ifndef MSG_CP
 #define MSG_CP                      FALSE          // CP通讯

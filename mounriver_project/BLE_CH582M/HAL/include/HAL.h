@@ -1,10 +1,13 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : HAL.h
-* Author             : ChnMasterOG, WCH
-* Version            : V1.1
-* Date               : 2022/11/13
-* Description        : HAL层通用头文件
-*******************************************************************************/
+ * File Name          : HAL.h
+ * Author             : ChnMasterOG, WCH
+ * Version            : V1.1
+ * Date               : 2022/11/13
+ * Description        : HAL层通用头文件
+ * Copyright (c) 2023 ChnMasterOG
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * SPDX-License-Identifier: GPL-3.0
+ *******************************************************************************/
 
 
 
@@ -21,7 +24,7 @@ extern "C"
 
 //#define FIRST_USED        // 出产设置
 
-/* HID data format */
+/* Mouse HID data format */
 typedef union {
     struct {
         unsigned char LeftBtn : 1;
@@ -38,6 +41,31 @@ typedef union {
     };
     uint8_t data[4];
 }Mouse_Data_t;
+
+/* Keyboard HID data format */
+typedef union {
+    struct {
+        unsigned char LeftCTRL : 1;
+        unsigned char LeftShift : 1;
+        unsigned char LeftAlt : 1;
+        unsigned char LeftGUI : 1;
+        unsigned char RightCTRL : 1;
+        unsigned char RightShift : 1;
+        unsigned char RightAlt : 1;
+        unsigned char RightGUI : 1;
+        unsigned char Reserved : 8;
+        unsigned char Key1 : 8;
+        unsigned char Key2 : 8;
+        unsigned char Key3 : 8;
+        unsigned char Key4 : 8;
+        unsigned char Key5 : 8;
+        unsigned char Key6 : 8;
+        };
+    uint8_t data[8];
+}Keyboard_Data_t;
+
+#define MouseDat        ((Mouse_Data_t*)HIDMouse)
+#define KeyboardDat     ((Keyboard_Data_t*)HIDKeyboard)
 
 #include "RTC.h"
 #include "SLEEP.h"	

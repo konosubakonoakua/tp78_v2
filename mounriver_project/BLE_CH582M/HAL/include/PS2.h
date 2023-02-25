@@ -4,6 +4,8 @@
  * Version            : V2.0
  * Date               : 2022/11/30
  * Description        : PS/2驱动头文件
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #ifndef __PS2_H

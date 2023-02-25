@@ -4,6 +4,7 @@
  * Version            : V1.1
  * Date               : 2022/3/20
  * Description        : OLED 驱动源文件
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 

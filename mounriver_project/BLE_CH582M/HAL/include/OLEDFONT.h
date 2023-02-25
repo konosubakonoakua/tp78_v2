@@ -4,6 +4,7 @@
  * Version            : V1.1
  * Date               : 2021/1/26
  * Description        : OLED字体头文件
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #ifndef __OLEDFONT_H

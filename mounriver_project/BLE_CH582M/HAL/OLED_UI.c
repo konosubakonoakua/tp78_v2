@@ -4,6 +4,7 @@
  * Version            : V1.0
  * Date               : 2023/1/28
  * Description        : OLED UI½Ó¿Ú
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 

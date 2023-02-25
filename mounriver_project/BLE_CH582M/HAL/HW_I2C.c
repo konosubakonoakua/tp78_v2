@@ -4,6 +4,7 @@
  * Version            : V2.0
  * Date               : 2022/11/30
  * Description        : Ó²¼þI2CÇý¶¯
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 

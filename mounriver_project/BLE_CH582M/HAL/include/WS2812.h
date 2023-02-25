@@ -3,7 +3,9 @@
 * Author             : ChnMasterOG
 * Version            : V1.0
 * Date               : 2021/12/16
-* Description        :
+* Description        : WS2812驱动头文件
+* Copyright (c) 2023 ChnMasterOG
+* SPDX-License-Identifier: GPL-3.0
 *******************************************************************************/
 
 #ifndef WS2812_H
@@ -32,7 +34,7 @@
   #define PWM_SEND_LOW_BIT()  TMR1_PWMActDataWidth(TIMING_ZERO)   //0.4us
   #define PWM_SEND_RESET()    TMR1_PWMActDataWidth(TIMING_RESET)  //0us
 
-  #define LED_Number          75    // 75个灯 - 其他键盘布局虚修改此处
+  #define LED_Number          1 // for test    // 75个灯 - 其他键盘布局虚修改此处
   #define LED_BRIGHTNESS      15    // 亮度 - 15/127
 
   #define Waterful_Repeat_Times    2   // 控制周期*2 = 流水灯周期

@@ -4,6 +4,8 @@
  * Version            : V1.0
  * Date               : 2023/1/3
  * Description        : mpr121电容传感器驱动
+ * Copyright (c) 2023 ChnMasterOG
+ * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #ifndef __MPR121_H
@@ -11,9 +13,9 @@
 
   #include "CH58x_common.h"
 
-  #define MPRINT_Pin        GPIO_Pin_19   // the same as PS/2 scl pin
+  #define MPRINT_Pin        GPIO_Pin_19   // MPR121 INT
   #define MPRINT_GPIO_(x)   GPIOB_ ## x
-  #define MPR121_ADDR       0xB6          // 0x5A<<1, addr pin connects to GND
+  #define MPR121_ADDR       0xB4          // 0x5A<<1, addr pin connects to GND
 
   #define MPR121_Number         1
   #define MPR121_TASK_PERIOD    20    // units: 1ms
@@ -111,10 +113,10 @@
   #define MPR121_REG_ECR        0x5E  // D7~D6:CL, D5~D4:ELEPROX_EN, D3~D0:ELE_EN
   #define MPR121_REG_SRST       0x80  // write 0x63 to reset
 
-  #define TOUCHBAR_TOU_THRESH   20    // touchbar touch threshold (default 3)
-  #define TOUCHBAR_REL_THRESH   10    // touchbar release threshold (default 2)
-  #define CAP_MOUSE_TOU_THRESH  20    // cap_mouse touch threshold (default 3)
-  #define CAP_MOUSE_REL_THRESH  7     // cap_mouse release threshold (default 2)
+  #define TOUCHBAR_TOU_THRESH   3     // touchbar touch threshold (default 3)
+  #define TOUCHBAR_REL_THRESH   2     // touchbar release threshold (default 2)
+  #define CAP_MOUSE_TOU_THRESH  3     // cap_mouse touch threshold (default 3)
+  #define CAP_MOUSE_REL_THRESH  2     // cap_mouse release threshold (default 2)
 
   #define MPR121_WriteReg(reg, dat)           HW_I2C_WR_Reg(reg, dat, MPR121_ADDR)
   #define MPR121_ReadReg(reg, pdat)           HW_I2C_RD_Reg(reg, pdat, MPR121_ADDR)

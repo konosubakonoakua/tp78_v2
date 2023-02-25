@@ -4,7 +4,7 @@
  * Version            : V1.1
  * Date               : 2022/1/26
  * Description        : 电池ADC采样源文件
- * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
@@ -29,12 +29,16 @@ void BATTERY_Init( void )
 //  RoughCalib_Value = ADC_DataCalib_Rough(); // 用于计算ADC内部偏差，记录到变量 RoughCalib_Value中
   // bat charging io
   GPIOB_ModeCfg( BAT_CHRG_PIN, GPIO_ModeIN_PU );
+  // control adc enable or disable
+  GPIOB_ModeCfg( BAT_COM_PIN, GPIO_ModeOut_PP_5mA );
+  GPIOB_ResetBits( BAT_COM_PIN );
   // adc init
-  GPIOA_ModeCfg( GPIO_Pin_8, GPIO_ModeIN_Floating );
+  GPIOA_ModeCfg( BAT_ADC_PIN, GPIO_ModeIN_Floating );
   ADC_ExtSingleChSampInit( SampleFreq_3_2, ADC_PGA_0 );
   ADC_ChannelCfg( 12 );
   ADC_StartUp();
   R8_ADC_AUTO_CYCLE = 0;    // ADC自动转换周期：256*16/60000000s = 68us
+  BAT_ADC_ENA();
   BATTERY_DMA_ENABLE( );
   tmos_start_task( halTaskID, BATTERY_EVENT, MS1_TO_SYSTEM_TIME(1000) );  // 等待稳定：1s
 }

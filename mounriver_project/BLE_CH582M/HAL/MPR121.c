@@ -4,14 +4,15 @@
  * Version            : V1.0
  * Date               : 2023/1/2
  * Description        : mpr121电容传感器驱动
+ * Copyright (c) 2023 ChnMasterOG
  * SPDX-License-Identifier: GPL-3.0
  *******************************************************************************/
 
 #include "HAL.h"
 
 /* pinmux */
-const uint8_t MPR121_Cap_Mouse_Pinmux[4] = {6, 5, 4, 7}; //{0, 1, 2, 3};  // up-ELE6, down-ELE4, left-ELE3, right-ELE5
-const uint8_t MPR121_TouchBar_Pinmux[7] = {3, 2, 1, 0, 6, 5, 4};  //{4, 5, 10, 9, 8, 7, 6}; // L1, L2, L3, M, R1, R2, R3
+const uint8_t MPR121_Cap_Mouse_Pinmux[4] = {0, 1, 2, 3};  // up-ELE6, down-ELE4, left-ELE3, right-ELE5
+const uint8_t MPR121_TouchBar_Pinmux[7] = {10, 9, 8, 7, 6, 5, 4}; // L1, L2, L3, M, R1, R2, R3
 
 /* algorithom variables */
 static alg_ListNode cap_mouse_data[4][ALG_CAP_MOUSE_BUF_LEN]; // 4 Corresponds to UP/DOWN/LEFT/RIGHT
