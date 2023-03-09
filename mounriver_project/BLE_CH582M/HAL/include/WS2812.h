@@ -34,18 +34,18 @@
   #define PWM_SEND_LOW_BIT()  TMR1_PWMActDataWidth(TIMING_ZERO)   //0.4us
   #define PWM_SEND_RESET()    TMR1_PWMActDataWidth(TIMING_RESET)  //0us
 
-  #define LED_Number          1 // for test    // 75个灯 - 其他键盘布局虚修改此处
+  #define LED_NUMBER          83    // 75个灯 - 其他键盘布局虚修改此处
   #define LED_BRIGHTNESS      15    // 亮度 - 15/127
 
   #define Waterful_Repeat_Times    2   // 控制周期*2 = 流水灯周期
 
   typedef void (*WS2812_Style_Func) ( void );   // WS2812变化样式对应函数
 
-  extern UINT8 LED_BYTE_Buffer[LED_Number][3];
+  extern UINT8 LED_BYTE_Buffer[LED_NUMBER][3];
   extern WS2812_Style_Func led_style_func;
 
   uint8_t DATAFLASH_Read_LEDStyle( void );
-  void DATAFLASH_Write_LEDStyle( uint8_t LED_Style_Number );
+  void DATAFLASH_Write_LEDStyle( uint16_t LED_Style_Number );
   void WS2812_PWM_Init( void );
   void WS2812_Style_Off( void );
   void WS2812_Style_Breath( void );

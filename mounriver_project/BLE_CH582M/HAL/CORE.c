@@ -52,6 +52,57 @@ void SoftReset(void)   //软件复位
 }
 
 /*******************************************************************************
+* Function Name  : TP78Reinit
+* Description    : TP78键盘睡眠唤醒
+* Input          : mode - 0为进入sleep流程; 1为进入wakeup流程
+*                  lp_type - 低功耗模式
+* Return         : 无
+*******************************************************************************/
+__HIGH_CODE
+void TP78Reinit(uint8_t mode, enum LP_Type lp_type)
+{
+  if (mode == 0) {  // 进入睡眠
+    WWDG_ResetCfg(DISABLE); // 关看门狗
+    Row_GPIO_(SetBits)(Row_Pin_ALL);  // 唤醒条件
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
+    OLED_WR_Byte(0xAE, OLED_CMD);  // OLED display off
+#endif
+#ifdef HAL_WS2812_PWM
+    led_style_func = WS2812_Style_Custom; WS2812_Send(); // WS2812
+#endif
+#if (defined HAL_HW_I2C) && (HAL_HW_I2C == TRUE)
+#if (defined HAL_I2C_TP) && (HAL_I2C_TP == TRUE)
+    I2C_TP_SendCommand_Sleep();   // 小红点sleep
+#endif
+#if ((defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE)) || ((defined HAL_MPR121_TOUCHBAR) && (HAL_MPR121_TOUCHBAR == TRUE))  // MPR121需要上电延迟
+    MPR121_WriteReg(MPR121_REG_FG_CDT, 0x7);
+#endif
+#ifdef HAL_BATTADC
+    BAT_ADC_DIS();  // ADC
+#endif
+#endif
+  } else {  // 唤醒键盘
+    if (lp_type == idle_mode) { // 恢复现场
+#if (defined HAL_WS2812_PWM)
+      DATAFLASH_Read_LEDStyle();  // WS2812
+#endif
+#if (defined HAL_HW_I2C) && (HAL_HW_I2C == TRUE)
+#if (defined HAL_I2C_TP) && (HAL_I2C_TP == TRUE)
+      I2C_TP_SendCommand_Wakeup();   // 小红点wake up
+#endif
+#endif
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
+      OLED_WR_Byte(0xAF, OLED_CMD);  // OLED display on
+#endif
+#if ((defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE)) || ((defined HAL_MPR121_TOUCHBAR) && (HAL_MPR121_TOUCHBAR == TRUE))  // MPR121需要上电延迟
+    MPR121_WriteReg(MPR121_REG_FG_CDT, 0x24);
+#endif
+      WWDG_ResetCfg(ENABLE);  // 开看门狗
+    } else SoftReset();
+  }
+}
+
+/*******************************************************************************
 * Function Name  : GotoLowpower
 * Description    : MCU进Low Power模式
 * Input          : type: 低功耗模式类型
@@ -62,8 +113,8 @@ void GotoLowpower(enum LP_Type type)
 {
 #if (defined HAL_KEYBOARD) && (HAL_KEYBOARD == TRUE)
   if (type > 3) return; // error type
-#if (defined MSG_CP) && (MSG_CP == TRUE)
-  CP_I2C_WR_Reg(CP_ENABLE_REG, CP_BIT_STANDBYMODE_ENABLE);  // 控制CP进低功耗模式
+#if (defined MODULE_DEMO) && (MODULE_DEMO == TRUE)
+  MODULE_I2C_WR_Reg(reg, dat, addr);  // 控制扩展模块进低功耗模式
 #endif
   Colum_GPIO_(ModeCfg)( Colum_Pin_ALL, GPIO_ModeIN_PD );
   Colum_GPIO_(ITModeCfg)( Colum_Pin_ALL, GPIO_ITMode_RiseEdge ); // 上升沿唤醒
@@ -72,15 +123,19 @@ void GotoLowpower(enum LP_Type type)
   switch (type)
   {
     case idle_mode: // 空闲模式 - 1.6mA
+      TP78Reinit(0, type);
       LowPower_Idle();
       break;
     case halt_mode: // 暂停模式 - 320uA
+      TP78Reinit(0, type);
       LowPower_Halt();
       break;
     case sleep_mode:  // 睡眠模式 - 0.7uA~2.8uA
-      LowPower_Sleep(RB_PWR_RAM30K | RB_PWR_RAM2K);
+      TP78Reinit(0, type);
+      LowPower_Sleep(RB_PWR_RAM30K | RB_PWR_RAM2K | RB_PWR_EXTEND | RB_PWR_XROM);
       break;
     case shutdown_mode: // 下电模式 - 0.2uA~2.3uA
+      TP78Reinit(0, type);
       LowPower_Shutdown(0);
       break;
     default:  // do not run here

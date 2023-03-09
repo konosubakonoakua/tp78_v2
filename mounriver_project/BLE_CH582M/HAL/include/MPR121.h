@@ -13,12 +13,12 @@
 
   #include "CH58x_common.h"
 
-  #define MPRINT_Pin        GPIO_Pin_19   // MPR121 INT
+  #define MPRINT_Pin        GPIO_Pin_18   // MPR121 INT
   #define MPRINT_GPIO_(x)   GPIOB_ ## x
   #define MPR121_ADDR       0xB4          // 0x5A<<1, addr pin connects to GND
 
   #define MPR121_Number         1
-  #define MPR121_TASK_PERIOD    20    // units: 1ms
+  #define MPR121_TASK_PERIOD    10    // units: 1ms
 
   #define MPR121_REG_STS0       0x00  // ELE0~ELE7 Touch Status
   #define MPR121_REG_STS1       0x01  // ELE8~ELE11, ELEPROX Touch Status
@@ -113,10 +113,15 @@
   #define MPR121_REG_ECR        0x5E  // D7~D6:CL, D5~D4:ELEPROX_EN, D3~D0:ELE_EN
   #define MPR121_REG_SRST       0x80  // write 0x63 to reset
 
-  #define TOUCHBAR_TOU_THRESH   3     // touchbar touch threshold (default 3)
-  #define TOUCHBAR_REL_THRESH   2     // touchbar release threshold (default 2)
   #define CAP_MOUSE_TOU_THRESH  3     // cap_mouse touch threshold (default 3)
   #define CAP_MOUSE_REL_THRESH  2     // cap_mouse release threshold (default 2)
+  #define CAP_MOUSE_MOVE_SPEED  8     // cap_mouse move speed (default 8)
+  #define TOUCHBAR_TOU_THRESH   3     // touchbar touch threshold (default 3)
+  #define TOUCHBAR_REL_THRESH   2     // touchbar release threshold (default 2)
+  #define DOUBLE_TOUCH_CNT      40    // double touch counter (default 40)
+  #define LONG_TOUCH_CNT        100   // long touch counter (default 100)
+
+  #define FILTER_CNT            2     // filter cnt which is less than this value
 
   #define MPR121_WriteReg(reg, dat)           HW_I2C_WR_Reg(reg, dat, MPR121_ADDR)
   #define MPR121_ReadReg(reg, pdat)           HW_I2C_RD_Reg(reg, pdat, MPR121_ADDR)
@@ -125,8 +130,7 @@
 
   /* mpr121 algorithm */
   #define ALG_COLLECT_CNT                     2
-  #define ALG_CAP_MOUSE_BUF_LEN               2 // must be 2
-  #define ALG_TOUCHBAR_BUF_LEN                2 // must be 2
+  #define ALG_BUF_LEN                         2 // must be 2
 
   #define ALG_MOVE_UP_INDEX                   0
   #define ALG_MOVE_DOWN_INDEX                 1
@@ -140,10 +144,12 @@
   #define ALG_CAP_MOUSE_PINMUX_BIT(idx)       (1 << MPR121_Cap_Mouse_Pinmux[idx])
   #define ALG_TOUCHBAR_PINMUX_BIT(idx)        (1 << MPR121_TouchBar_Pinmux[idx])
 
-  #define __LIMIT__(data, limit_val)          (data >= limit_val ? limit_val : data)
-  #define __ABS_LIMIT__(data, abs_limit_val)  (data > 0 ? (data >= abs_limit_val ? abs_limit_val : data) : (data <= -abs_limit_val ? -abs_limit_val : data))
-  #define __SIGN_STATE__(data)                (data > 0 ? 1 : (data == 0 ? 0 : -1))
-  #define __MIN__(a, b)                       (a >= b ? b : a)
+  #define __LIMIT__(data, limit_val)          ((data) >= (limit_val) ? (limit_val) : (data))
+  #define __ABS_LIMIT__(data, abs_limit_val)  ((data) > 0 ? ((data) >= (abs_limit_val) ? (abs_limit_val) : (data)) : ((data) <= -(abs_limit_val) ? -(abs_limit_val) : (data)))
+  #define __SIGN_STATE__(data)                ((data) > 0 ? 1 : ((data) == 0 ? 0 : -1))
+  #define __MIN__(a, b)                       ((a) >= (b) ? (b) : (a))
+  #define __BOOL__(exp)                       ((exp) != 0)
+  #define __iBOOL__(exp)                      ((exp) == 0)
 
   typedef struct alg_ListNode{
     uint16_t dat;
@@ -152,22 +158,20 @@
   }alg_ListNode;
 
   typedef struct alg_Param{
-    uint8_t magic;
-    uint8_t cap_mouse_tou_thr;
-    uint8_t cap_mouse_rel_thr;
-    uint8_t touchbar_tou_thr;
-    uint8_t touchbar_rel_thr;
+    uint16_t magic;
+    uint16_t cap_mouse_tou_thr;
+    uint16_t cap_mouse_rel_thr;
+    uint16_t cap_mouse_move_speed;
+    uint16_t touchbar_tou_thr;
+    uint16_t touchbar_rel_thr;
     uint16_t double_touch_cnt;
     uint16_t long_touch_cnt;
     uint16_t btn_dat;
     uint16_t dbtn_dat;
-    uint16_t cnt_dat;
+    uint16_t l_cnt_dat;
+    uint16_t m_cnt_dat;
+    uint16_t r_cnt_dat;
   }alg_Param;
-
-  typedef struct Touchbarstate{
-      BOOL swip_left;
-      BOOL swip_right;
-  }Touchbarstate;
 
   typedef enum {
     DIRECT_OTHER = 0,
@@ -175,6 +179,8 @@
     DIRECT_RIGHT,
     DIRECT_LEFT2,
     DIRECT_RIGHT2,
+    DIRECT_LEFT3,
+    DIRECT_RIGHT3,
     DIRECT_JUDGE_LEFT,
     DIRECT_JUDGE_RIGHT,
   }alg_TouchbarDirectiion;
@@ -183,11 +189,12 @@
   extern const uint8_t MPR121_TouchBar_Pinmux[7];
 
   extern alg_ListNode* cap_mouse_dat_head[4];
-  extern alg_ListNode* cap_mouse_sts_head[1];
-  extern alg_ListNode* touchbar_head[1];
+  extern alg_ListNode* mpr121_sts_head[1];
 
   extern uint8_t cap_mouse_data_change;
   extern uint8_t touchbar_data_change;
+
+  extern Touchbar_Data_t TouchbarDat;
 
   void MPR121_Init(char* buf);
   void DATAFLASH_Read_MPR121_ALG_Parameter(void);

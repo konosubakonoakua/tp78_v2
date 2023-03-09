@@ -21,7 +21,7 @@
 
     #define MAX_PRESS_COUNT 15   // 8个特殊键+6个一般键+1个Fn键
     #define MAX_CHANGETIMES 24   // 按下Capslock改变键盘布局检测次数
-    #define CAPSLOCK_HOLDING_TIMES  4 // Capslock按下持续时间
+    #define PRESS_HOLDING_TIMES  4 // 按键按下持续时间(太短HOST可能检测不到)
 
     //special
     #define KEY_None    0x00
@@ -135,17 +135,20 @@
     #define KEY_MouseM      0xF2
 
     //复合键
-    #define SP_KEY_NUMBER       5     // 复合键个数
+    #define SP_KEY_NUMBER       7     // 复合键个数
     #define KEY_SP_1            0xF3
     #define KEY_SP_2            0xF4
     #define KEY_SP_3            0xF5
     #define KEY_SP_4            0xF6
-    #define KEY_SP_5            0xF5
+    #define KEY_SP_5            0xF7
+    #define KEY_SP_6            0xF8  // 用于触摸条左滑
+    #define KEY_SP_7            0xF9  // 用于触摸条右滑
 
     //Fn功能
     #define Fn_Mode_None                  0x00
     #define Fn_Mode_Reset                 0x01
     #define Fn_Mode_ChangeKey             0x02
+    #define Fn_Mode_Enter_Cfg             0xA0
     #define Fn_Mode_JumpBoot              0xB0
     #define Fn_Mode_SoftReset             0xB1
     #define Fn_Mode_RForBLE               0xB2
@@ -154,6 +157,7 @@
     #define Fn_Mode_VolumeDown            0xC1
     #define Fn_Mode_DisEnableBLE          0xD0
     #define Fn_Mode_DisEnableTP           0xD1
+    #define Fn_Mode_UDiskMode             0xDF
     #define Fn_Mode_PriorityUSBorBLE      0xE0
     #define Fn_Mode_SelectDevice1         0xE1
     #define Fn_Mode_SelectDevice2         0xE2
@@ -168,21 +172,22 @@
     #define Fn_Mode_GiveUp                0xFF
 
     typedef struct _Keyboard_Status_t {
-        uint8_t changeBL : 1;
-        uint8_t Fn : 1;
+        uint8_t changeBL : 1; // 改变背光标志位
+        uint8_t enter_cfg : 1;  // 配置参数模式标志位
+        uint8_t Fn : 1; // Fn键按下标志位
         uint8_t SP_Key : 3;
-        uint8_t reserved : 3;
+        uint8_t reserved : 2;
     }Keyboard_Status_t;
 
     extern uint32_t Row_Pin_ALL, Colum_Pin_ALL;
     extern uint8_t CustomKey[COL_SIZE][ROW_SIZE];
     extern uint8_t Extra_CustomKey[COL_SIZE][ROW_SIZE];
-    extern Keyboard_Status_t keyboard_status;
+    extern Keyboard_Status_t g_keyboard_status;
 
     void KEYBOARD_Reset( void );
     UINT8 KEYBOARD_Custom_Function( void );
     void KEYBOARD_Init( void );
     void KEYBOARD_Detection( void );
-    uint8_t KEYBOARD_EnterPasskey( uint32_t* key );
+    uint8_t KEYBOARD_EnterNumber(uint32_t *key, const char* preStr, const char* postStr, uint8_t limit_len);
 
 #endif

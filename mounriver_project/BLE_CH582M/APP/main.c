@@ -95,7 +95,7 @@ int main( void )
 #if ((defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE)) || ((defined HAL_MPR121_TOUCHBAR) && (HAL_MPR121_TOUCHBAR == TRUE))
   tmos_start_task( halTaskID, MPR121_EVENT, 10 );  // MPR121
 #endif
-  tmos_start_task( halTaskID, SYST_EVENT, 10 );  // 系统定时
+  tmos_start_task( halTaskID, FEEDDOG_EVENT, 10 );  // 喂狗线程
 //  tmos_start_task( halTaskID, HAL_TEST_EVENT, 10 );
   Main_Circulation();
 }
@@ -110,12 +110,13 @@ __INTERRUPT
 __HIGH_CODE
 void GPIOA_IRQHandler(void)
 {
-#if (defined MSG_CP) && (MSG_CP == TRUE)
-  CP_WAKEUP_GPIO(SetBits)( CP_WAKEUP_PIN );   // 唤醒CP
-  g_Ready_Status.cp = FALSE;
-  tmos_start_task( halTaskID, CP_INITIAL_EVENT, MS1_TO_SYSTEM_TIME(300) );  // CP重新上电
+#if (defined HAL_MODULE) && (HAL_MODULE == TRUE)
+  MODULE_WAKEUP_GPIO(SetBits)( MODULE_WAKEUP_PIN );   // 唤醒扩展(高电平)
+  g_Ready_Status.module = FALSE;
+  tmos_start_task( halTaskID, HAL_MODULE, MS1_TO_SYSTEM_TIME(300) );  // 扩展重新上电
 #endif
   GPIOA_ClearITFlagBit(Colum_Pin_ALL);  // 用于唤醒
+  TP78Reinit(1, g_lp_type);
 }
 
 /*******************************************************************************

@@ -11,6 +11,8 @@
 #ifndef __OLED_UI_H
   #define __OLED_UI_H
 
+  #include "CH58x_common.h"
+
   #define OLED_UI_TASK_MAX          5     // UI最大普通任务数
   #define OLED_UI_DELAY_TASK_MAX    3     // UI最大延迟任务数
   #define OLED_UI_STR_LEN_MAX       17    // UI打印字符串最长字符数
@@ -29,6 +31,7 @@
     OLED_UI_FLAG_DEFAULT = 0,
     OLED_UI_FLAG_DRAW_OK,
     OLED_UI_FLAG_CANCEL_OK,
+    OLED_UI_FLAG_CLEAR_PAGE,
     OLED_UI_FLAG_SHOW_STRING,
     OLED_UI_FLAG_SHOW_INFO,
     OLED_UI_FLAG_CANCEL_INFO,
@@ -68,6 +71,11 @@
     OLED_UI_SWIPE_RIGHT,
   }oled_ui_swipe;
 
+  typedef enum {
+    OLED_UI_TYPE_MENU = 0,
+    OLED_UI_TYPE_ENTER_NUM,
+  }oled_ui_menu_type;
+
   typedef struct {
     uint8_t x0;
     uint8_t y0;
@@ -104,18 +112,46 @@
     uint8_t slot_size;
   }oled_ui_slot_structure;
 
-  typedef struct oled_ui_menu_structure{
-    const struct oled_ui_menu_structure* p[OLED_UI_MENU_MAX_LEN+1]; // 末位表示上级菜单指针
+  typedef struct _oled_ui_menu_structure{
+    oled_ui_menu_type type; // 菜单指针类型
+    uint8_t* p[OLED_UI_MENU_MAX_LEN+3]; // 菜单指针(末三位分别表示: 上级、上翻页、下翻页)
     uint8_t text[OLED_UI_MENU_MAX_LEN][OLED_UI_STR_LEN_MAX];
-    uint8_t cur_x;  // 表示当前菜单中使用RAM的x坐标
+    uint8_t menu_size;  // 菜单项数目
   }oled_ui_menu_structure;
 
+  typedef struct _oled_ui_enter_num_structure{
+    oled_ui_menu_type type; // 菜单指针类型
+    uint8_t* p;  // 返回的菜单指向
+    const uint8_t* preStr;
+    const uint8_t* postStr;
+    uint8_t pStr_len;
+    uint8_t line; // 对应配置文件的行数
+    uint8_t limit_len;
+  }oled_ui_enter_num_structure;
+
+  #define P_MENU_T(x)         ((const oled_ui_menu_structure*)x)
+  #define P_EN_T(x)           ((const oled_ui_enter_num_structure*)x)
+
   extern uint8_t oled_fresh_rate;
+
+  /* declare in OLED_UI_CFG.c */
+  extern const oled_ui_menu_structure cfg_menu_1;
+  extern const oled_ui_menu_structure cfg_menu_2;
+  extern const oled_ui_menu_structure cfg_menu_3;
+  extern const oled_ui_menu_structure main_menu;
+  extern const oled_ui_enter_num_structure bledevice_en;
+  extern const oled_ui_enter_num_structure ledstyle_en;
+  extern const oled_ui_enter_num_structure rfenable_en;
+  extern const oled_ui_enter_num_structure udiskmode_en;
+  extern const oled_ui_enter_num_structure mprparam3_en;
+  extern const oled_ui_enter_num_structure mprparam6_en;
+  extern const oled_ui_enter_num_structure mprparam7_en;
 
   void OLED_UI_ShowOK(uint8_t x, uint8_t y, uint8_t s);
   void OLED_UI_ShowCapslock(uint8_t x, uint8_t y, uint8_t s);
   int OLED_UI_printf(char *pFormat, ...);
   uint8_t OLED_UI_add_task(oled_ui_data_flag flag, oled_ui_pos_len pos_len, uint8_t* addr, uint8_t* pstr);
+  uint8_t OLED_UI_add_CLEARPAGE_task(uint8_t y0, uint8_t y1);
   uint8_t OLED_UI_add_SHOWSTRING_task(uint8_t x, uint8_t y, char *pstr, ...);
   uint8_t OLED_UI_add_SHOWINFO_task(char *pstr, ...);
   uint8_t OLED_UI_add_default_task(oled_ui_data_flag flag);

@@ -11,22 +11,68 @@
 #include "HAL.h"
 
 /* pinmux */
-const uint8_t MPR121_Cap_Mouse_Pinmux[4] = {0, 1, 2, 3};  // up-ELE6, down-ELE4, left-ELE3, right-ELE5
+const uint8_t MPR121_Cap_Mouse_Pinmux[4] = {1, 2, 3, 0};  // up-ELE6, down-ELE4, left-ELE3, right-ELE5
 const uint8_t MPR121_TouchBar_Pinmux[7] = {10, 9, 8, 7, 6, 5, 4}; // L1, L2, L3, M, R1, R2, R3
 
+/**************use py to generate***************
+  import math
+  for i in range(37):
+    a = round(math.sin(math.pi * i / 4 / 36), 4)
+    b = round(math.cos(math.pi * i / 4 / 36), 4)
+    print("{%.4f, %.4f},  //%d" % (a, b, i))
+************************************************/
+/* cap_mouse movement angle arr */
+const float MPR121_Cap_Mouse_Movement_arr[37][2] = { {0.0000, 1.0000},  //0
+                                                     {0.0000, 1.0000},  //1 {0.0218, 0.9998},  //1
+                                                     {0.0000, 1.0000},  //2 {0.0436, 0.9990},  //2
+                                                     {0.0000, 1.0000},  //3 {0.0654, 0.9979},  //3
+                                                     {0.0000, 1.0000},  //4 {0.0872, 0.9962},  //4
+                                                     {0.1089, 0.9941},  //5
+                                                     {0.1305, 0.9914},  //6
+                                                     {0.1521, 0.9884},  //7
+                                                     {0.1736, 0.9848},  //8
+                                                     {0.1951, 0.9808},  //9
+                                                     {0.2164, 0.9763},  //10
+                                                     {0.2377, 0.9713},  //11
+                                                     {0.2588, 0.9659},  //12
+                                                     {0.2798, 0.9600},  //13
+                                                     {0.3007, 0.9537},  //14
+                                                     {0.3214, 0.9469},  //15
+                                                     {0.3420, 0.9397},  //16
+                                                     {0.3624, 0.9320},  //17
+                                                     {0.3827, 0.9239},  //18
+                                                     {0.4027, 0.9153},  //19
+                                                     {0.4226, 0.9063},  //20
+                                                     {0.4423, 0.8969},  //21
+                                                     {0.4617, 0.8870},  //22
+                                                     {0.4810, 0.8767},  //23
+                                                     {0.5000, 0.8660},  //24
+                                                     {0.5188, 0.8549},  //25
+                                                     {0.5373, 0.8434},  //26
+                                                     {0.5556, 0.8315},  //27
+                                                     {0.5736, 0.8192},  //28
+                                                     {0.5913, 0.8064},  //29
+                                                     {0.6088, 0.7934},  //30
+                                                     {0.6259, 0.7799},  //31
+                                                     {0.6428, 0.7660},  //32
+                                                     {0.6593, 0.7518},  //33
+                                                     {0.6756, 0.7373},  //34
+                                                     {0.6915, 0.7224},  //35
+                                                     {0.7071, 0.7071},  //36
+};
+
 /* algorithom variables */
-static alg_ListNode cap_mouse_data[4][ALG_CAP_MOUSE_BUF_LEN]; // 4 Corresponds to UP/DOWN/LEFT/RIGHT
-static alg_ListNode cap_mouse_sts[ALG_CAP_MOUSE_BUF_LEN];
-static alg_ListNode touchbar_data[ALG_TOUCHBAR_BUF_LEN];
+static alg_ListNode cap_mouse_data[4][ALG_BUF_LEN]; // 4 Corresponds to UP/DOWN/LEFT/RIGHT
+static alg_ListNode mpr121_sts_data[ALG_BUF_LEN];
+static uint16_t cap_mouse_base_data[4];
 alg_ListNode* cap_mouse_dat_head[4];
-alg_ListNode* cap_mouse_sts_head[1];
-alg_ListNode* touchbar_head[1];
+alg_ListNode* mpr121_sts_head[1];
 alg_Param mpr_algParameter;
 
 BOOL cap_mouse_data_change = FALSE;
 BOOL touchbar_data_change = FALSE;
 
-Touchbarstate Touchbardat;
+Touchbar_Data_t TouchbarDat;
 
 /*******************************************************************************
 * Function Name  : MPR121_Config_Registers
@@ -126,30 +172,36 @@ static void MPR121_ALG_Init(void)
   uint8_t i, j;
   /* Cap Mouse Data(cycle list) Init */
   for (i = 0; i < 4; i++) {
-    for (j = 0; j < ALG_CAP_MOUSE_BUF_LEN-1; j++) {
+    for (j = 0; j < ALG_BUF_LEN-1; j++) {
       cap_mouse_data[i][j].next = &cap_mouse_data[i][j+1];
       cap_mouse_data[i][j+1].prev = &cap_mouse_data[i][j];
     }
-    cap_mouse_data[i][0].prev = &cap_mouse_data[i][ALG_CAP_MOUSE_BUF_LEN-1];
-    cap_mouse_data[i][ALG_CAP_MOUSE_BUF_LEN-1].next = &cap_mouse_data[i][0];
+    cap_mouse_data[i][0].prev = &cap_mouse_data[i][ALG_BUF_LEN-1];
+    cap_mouse_data[i][ALG_BUF_LEN-1].next = &cap_mouse_data[i][0];
     cap_mouse_dat_head[i] = &cap_mouse_data[i][0];
   }
-  /* Cap Mouse Status(cycle list) Init */
-  for (i = 0; i < ALG_CAP_MOUSE_BUF_LEN-1; i++) {
-    cap_mouse_sts[i].next = &cap_mouse_sts[i+1];
-    cap_mouse_sts[i+1].prev = &cap_mouse_sts[i];
+  /* MPR121 Status(cycle list) Init */
+  for (i = 0; i < ALG_BUF_LEN-1; i++) {
+    mpr121_sts_data[i].next = &mpr121_sts_data[i+1];
+    mpr121_sts_data[i+1].prev = &mpr121_sts_data[i];
   }
-  cap_mouse_sts[0].prev = &cap_mouse_sts[ALG_CAP_MOUSE_BUF_LEN-1];
-  cap_mouse_sts[ALG_CAP_MOUSE_BUF_LEN-1].next = &cap_mouse_sts[0];
-  cap_mouse_sts_head[0] = &cap_mouse_sts[0];
-  /* TouchBar Data(cycle list) Init */
-  for (i = 0; i < ALG_TOUCHBAR_BUF_LEN-1; i++) {
-    touchbar_data[i].next = &touchbar_data[i+1];
-    touchbar_data[i+1].prev = &touchbar_data[i];
+  mpr121_sts_data[0].prev = &mpr121_sts_data[ALG_BUF_LEN-1];
+  mpr121_sts_data[ALG_BUF_LEN-1].next = &mpr121_sts_data[0];
+  mpr121_sts_head[0] = &mpr121_sts_data[0];
+}
+
+/*******************************************************************************
+* Function Name  : MPR121_BASE_Init
+* Description    : MPR121»ù×¼Êý¾Ý³õÊ¼»¯
+* Input          : None
+* Return         : None
+*******************************************************************************/
+static void MPR121_BASE_Init(void)
+{
+  uint8_t i;
+  for (i = 0; i < 4; i++) { // repeat
+    cap_mouse_base_data[i] = 750;
   }
-  touchbar_data[0].prev = &touchbar_data[ALG_TOUCHBAR_BUF_LEN-1];
-  touchbar_data[ALG_TOUCHBAR_BUF_LEN-1].next = &touchbar_data[0];
-  touchbar_head[0] = &touchbar_data[0];
 }
 
 /*******************************************************************************
@@ -160,7 +212,7 @@ static void MPR121_ALG_Init(void)
 *******************************************************************************/
 void MPR121_Init(char* buf)
 {
-  /* config PB19 as TP_INT */
+  /* config PB18 as TP_INT */
   MPRINT_GPIO_(SetBits)( MPRINT_Pin );
   MPRINT_GPIO_(ModeCfg)( MPRINT_Pin, GPIO_ModeIN_PU );
 
@@ -173,6 +225,7 @@ void MPR121_Init(char* buf)
   DATAFLASH_Read_MPR121_ALG_Parameter();
   MPR121_ALG_Init();
   MPR121_Config_Registers(buf);
+  MPR121_BASE_Init();
 }
 
 /*******************************************************************************
@@ -183,14 +236,17 @@ void MPR121_Init(char* buf)
 *******************************************************************************/
 void DATAFLASH_Read_MPR121_ALG_Parameter(void)
 {
-  HAL_Fs_Read_keyboard_cfg(FS_LINE_MPR_ALG_MAGIC, 5, (uint8_t*)&mpr_algParameter);
+  HAL_Fs_Read_keyboard_cfg(FS_LINE_MPR_ALG_MAGIC, 8, (uint16_t*)&mpr_algParameter);
   if (mpr_algParameter.magic != ALG_PARAM_MAGIC) {
     // use default parameter
     mpr_algParameter.magic = ALG_PARAM_MAGIC;
-    mpr_algParameter.touchbar_tou_thr = TOUCHBAR_TOU_THRESH;
-    mpr_algParameter.touchbar_rel_thr = TOUCHBAR_REL_THRESH;
     mpr_algParameter.cap_mouse_tou_thr = CAP_MOUSE_TOU_THRESH;
     mpr_algParameter.cap_mouse_rel_thr = CAP_MOUSE_REL_THRESH;
+    mpr_algParameter.cap_mouse_move_speed = CAP_MOUSE_MOVE_SPEED;
+    mpr_algParameter.touchbar_tou_thr = TOUCHBAR_TOU_THRESH;
+    mpr_algParameter.touchbar_rel_thr = TOUCHBAR_REL_THRESH;
+    mpr_algParameter.double_touch_cnt = DOUBLE_TOUCH_CNT;
+    mpr_algParameter.long_touch_cnt = LONG_TOUCH_CNT;
   }
 }
 
@@ -202,7 +258,7 @@ void DATAFLASH_Read_MPR121_ALG_Parameter(void)
 *******************************************************************************/
 void DATAFLASH_Write_MPR121_ALG_Parameter(void)
 {
-  HAL_Fs_Write_keyboard_cfg(FS_LINE_MPR_ALG_MAGIC, 5, (uint8_t*)&mpr_algParameter);
+  HAL_Fs_Write_keyboard_cfg(FS_LINE_MPR_ALG_MAGIC, 7, (uint16_t*)&mpr_algParameter);
 }
 
 /*******************************************************************************
@@ -217,6 +273,7 @@ void MPR121_ALG_Update_algListNode(alg_ListNode* p[], uint8_t index, uint16_t da
   p[index]->dat = dat;
 }
 
+#if 0
 /*******************************************************************************
 * Function Name  : MPR121_ALG_Judge_Cap_Mouse
 * Description    : MPR121Ëã·¨ÅÐ¶Ï´¥Ãþ°å
@@ -230,7 +287,7 @@ void MPR121_ALG_Judge_Cap_Mouse(void)
   signed char YMovement = 0;
   signed char sign_state_x, sign_state_y;
   uint8_t temp;
-  uint16_t now_dat = MPR121_ELE_to_Pin(cap_mouse_sts_head[0]->dat, MPR121_Cap_Mouse_Pinmux, 4);
+  uint16_t now_dat = MPR121_ELE_to_Pin(mpr121_sts_head[0]->dat, MPR121_Cap_Mouse_Pinmux, 4);
 
   /* judge dir-up */
   if (now_dat & ALG_PINMUX_BIT(ALG_MOVE_UP_INDEX)) {
@@ -265,70 +322,80 @@ void MPR121_ALG_Judge_Cap_Mouse(void)
     cap_mouse_data_change = TRUE;
   }
 }
+#endif
 
-#if 0
 /*******************************************************************************
-* Function Name  : MPR121_ALG_Judge_Cap_Mouse_2
+* Function Name  : MPR121_ALG_Judge_Cap_Mouse
 * Description    : MPR121Ëã·¨ÅÐ¶Ï´¥Ãþ°å
 * Input          : None
 * Return         : None
 *******************************************************************************/
-void MPR121_ALG_Judge_Cap_Mouse_2(void)
+void MPR121_ALG_Judge_Cap_Mouse(void)
 {
-  Mousestate* const data = (Mousestate*)&HID_DATA[1];
+  Mouse_Data_t* const data = (Mouse_Data_t*)HIDMouse;
+  uint32_t angle;
+  uint16_t min_data = 0xFFFF, min_data2 = 0xFFFF;
+  uint16_t now_dat = MPR121_ELE_to_Pin(mpr121_sts_head[0]->dat, MPR121_Cap_Mouse_Pinmux, 4);
   signed char XMovement = 0;
   signed char YMovement = 0;
-  uint16_t sum1, sum2;
-  uint8_t ret;
-  uint16_t now_dat = MPR121_ELE_to_Pin(cap_mouse_sts_head[0]->dat, MPR121_Cap_Mouse_Pinmux, 4);
-  uint16_t pre_dat = MPR121_ELE_to_Pin(cap_mouse_sts_head[0]->prev->dat, MPR121_Cap_Mouse_Pinmux, 4);
+  uint8_t i, min_idx = 0, min_idx2 = 0;
 
-  /* assert CAP_MOUSE_BUF_LEN == 2 */
-  /* judge up */
-  sum1 = cap_mouse_dat_head[ALG_MOVE_UP_INDEX]->dat/2;
-  sum2 = cap_mouse_dat_head[ALG_MOVE_UP_INDEX]->prev->dat/2;
-  if (sum1 < sum2 && (sum2 - sum1) > mpr_algParameter.cap_mouse_tou_thr) YMovement--;
-  else if (sum1 > sum2 && (sum1 - sum2) > mpr_algParameter.cap_mouse_tou_thr) YMovement++;
-  /* judge down */
-  sum1 = cap_mouse_dat_head[ALG_MOVE_DOWN_INDEX]->dat/2;
-  sum2 = cap_mouse_dat_head[ALG_MOVE_DOWN_INDEX]->prev->dat/2;
-  if (sum1 < sum2 && (sum2 - sum1) > mpr_algParameter.cap_mouse_tou_thr) YMovement++;
-  else if (sum1 > sum2 && (sum1 - sum2) > mpr_algParameter.cap_mouse_tou_thr) YMovement--;
-  /* judge left */
-  sum1 = cap_mouse_dat_head[ALG_MOVE_LEFT_INDEX]->dat/2;
-  sum2 = cap_mouse_dat_head[ALG_MOVE_LEFT_INDEX]->prev->dat/2;
-  if (sum1 < sum2 && (sum2 - sum1) > mpr_algParameter.cap_mouse_tou_thr) XMovement++;
-  else if (sum1 > sum2 && (sum1 - sum2) > mpr_algParameter.cap_mouse_tou_thr) XMovement--;
-  /* judge right */
-  sum1 = cap_mouse_dat_head[ALG_MOVE_RIGHT_INDEX]->dat/2;
-  sum2 = cap_mouse_dat_head[ALG_MOVE_RIGHT_INDEX]->prev->dat/2;
-  if (sum1 < sum2 && (sum2 - sum1) > mpr_algParameter.cap_mouse_tou_thr) XMovement--;
-  else if (sum1 > sum2 && (sum1 - sum2) > mpr_algParameter.cap_mouse_tou_thr) XMovement++;
-  /* prepare ret */
-//  if (XMovement != 0) {
-//    if (XMovement <= 2) XMovement--;
-//    else XMovement++;
-//  }
-//  if (YMovement != 0) {
-//    if (YMovement <= 2) YMovement--;
-//    else YMovement++;
-//  }
-  XMovement *= 5;
-  YMovement *= 5; // multiple
-  ret = ((data->XMovement != XMovement) || (data->YMovement != YMovement)) && (XMovement || YMovement);
-  if (ret && pre_dat != 0) {
-    data->XMovement = (uint8_t)XMovement;
-    data->YMovement = (uint8_t)YMovement;
-    cap_mouse_data_change = TRUE;
-  } else if ((XMovement == 0 && YMovement == 0) && now_dat != 0) {  // unrelease
-    cap_mouse_data_change = TRUE; // keep last move
-  } else if ((data->XMovement || data->YMovement) && now_dat == 0) {  // judge release
-    data->XMovement = 0;
-    data->YMovement = 0;
-    cap_mouse_data_change = TRUE;
+  if ((now_dat & 0xF) == 0) {
+    if (data->XMovement != 0) {
+      data->XMovement = 0;
+      cap_mouse_data_change = TRUE;
+    }
+    if (data->YMovement != 0) {
+      data->YMovement = 0;
+      cap_mouse_data_change = TRUE;
+    }
+    return;
   }
+
+  for (i = 0; i < 4; i++) {
+    if (cap_mouse_data[i]->dat < min_data) {
+      min_data2 = min_data;
+      min_data = cap_mouse_data[i]->dat;
+      min_idx2 = min_idx;
+      min_idx = i;
+    } else if (cap_mouse_data[i]->dat < min_data2) {
+      min_data2 = cap_mouse_data[i]->dat;
+      min_idx2 = i;
+    }
+  }
+
+  angle = 72 * (cap_mouse_base_data[min_idx2] - min_data2) / (cap_mouse_base_data[min_idx2] - min_data2 + cap_mouse_base_data[min_idx] - min_data);  // 0~36
+
+  switch (min_idx) {
+    case 0:   // up
+      data->YMovement = -mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][1];
+      if (min_idx2 == 2) data->XMovement = -mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else if (min_idx2 == 3) data->XMovement = mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else data->XMovement = 0;
+      break;
+    case 1:   // down
+      data->YMovement = mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][1];
+      if (min_idx2 == 2) data->XMovement = -mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else if (min_idx2 == 3) data->XMovement = mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else data->XMovement = 0;
+      break;
+    case 2:   // left
+      data->XMovement = -mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][1];
+      if (min_idx2 == 0) data->YMovement = -mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else if (min_idx2 == 1) data->YMovement = mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else data->YMovement = 0;
+      break;
+    case 3:   // right
+      data->XMovement = mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][1];
+      if (min_idx2 == 0) data->YMovement = -mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else if (min_idx2 == 1) data->YMovement = mpr_algParameter.cap_mouse_move_speed * MPR121_Cap_Mouse_Movement_arr[angle][0];
+      else data->YMovement = 0;
+      break;
+  }
+
+  cap_mouse_data_change = TRUE;
+
 }
-#endif
 
 /*******************************************************************************
 * Function Name  : MPR121_ALG_Judge_Touchbar
@@ -342,67 +409,73 @@ void MPR121_ALG_Judge_Touchbar(void)
   static alg_TouchbarDirectiion dir = DIRECT_OTHER;
   Mouse_Data_t* const m_data = (Mouse_Data_t*)HIDMouse;
   uint8_t record;
-  uint16_t now_dat = MPR121_ELE_to_Pin(touchbar_head[0]->dat, MPR121_TouchBar_Pinmux, 7);
-  uint16_t pre_dat = MPR121_ELE_to_Pin(touchbar_head[0]->prev->dat, MPR121_TouchBar_Pinmux, 7);
+  uint16_t now_dat = MPR121_ELE_to_Pin(mpr121_sts_head[0]->dat, MPR121_TouchBar_Pinmux, 7);
+  uint16_t pre_dat = MPR121_ELE_to_Pin(mpr121_sts_head[0]->prev->dat, MPR121_TouchBar_Pinmux, 7);
 
   record = m_data->data[0] & 0x7;
 
-  if (now_dat != pre_dat) { // Btn0 => Btn1 or Btn1 => Btn0
-    mpr_algParameter.btn_dat = now_dat;  // set btn data
-    mpr_algParameter.cnt_dat = 0;
-    if ((now_dat & 0xF) == 0 && (pre_dat & 0xF) != 0) { // left Btn1 => Btn0
-      mpr_algParameter.dbtn_dat = now_dat; // next touch is double touch
-    }
-    if (now_dat > pre_dat) { // swip to right
-      if (dir & 1) dir = DIRECT_RIGHT;
-      else {
-        dir += 2;
-        if (dir == DIRECT_JUDGE_RIGHT) {  // judge to swipe right
-          dir = DIRECT_OTHER;
-          Touchbardat.swip_right = TRUE;
-          OLED_PRINT("RIGHT!");
-        }
-      }
-    } else if (now_dat < pre_dat) { // swip to left
-      if (!(dir & 1)) dir = DIRECT_LEFT;
-      else {
-        dir += 2;
-        if (dir == DIRECT_JUDGE_LEFT) { // judge to swipe left
-          dir = DIRECT_OTHER;
-          Touchbardat.swip_left = TRUE;
-          OLED_PRINT("LEFT!");
-        }
+  /* judge swipe */
+  if (now_dat > pre_dat) { // swip to right
+    if (dir & 1) dir = DIRECT_RIGHT;
+    else {
+      dir += 2;
+      if (dir == DIRECT_JUDGE_RIGHT) {  // judge to swipe right
+        dir = DIRECT_OTHER;
+        TouchbarDat.swip_right = TRUE;
+        goto touchbar_judge_end;
       }
     }
-  } else {  // Btn1 => Btn1 or Btn0 => Btn0
-    mpr_algParameter.cnt_dat = __LIMIT__(mpr_algParameter.cnt_dat+1, 65534);
-    if ((now_dat & 0xF) == 0 && (pre_dat & 0xF) == 0) { // left Btn0 => Btn0
-      if (mpr_algParameter.cnt_dat >= mpr_algParameter.double_touch_cnt) {
-        mpr_algParameter.dbtn_dat = 0;
-      }
-      m_data->data[0] &= ~0x1;  // release left btn
-    } else {  // left Btn1 => Btn1
-      if (mpr_algParameter.dbtn_dat != 0) {
-        mpr_algParameter.dbtn_dat = 0;
-        m_data->LeftBtn = 1;  // left btn = 1
-      }
-    }
-    if ((now_dat & 0x10) == 0 && (pre_dat & 0x10) == 0) { // middle Btn0 => Btn0
-      m_data->data[0] &= ~0x4;  // release middle btn
-    } else {  // middle Btn1 => Btn1
-      if (mpr_algParameter.cnt_dat >= mpr_algParameter.long_touch_cnt) {
-        m_data->MiddleBtn = 1;  // middle btn = 1
-      }
-    }
-    if ((now_dat & 0x1E0) == 0 && (pre_dat & 0x1E0) == 0) { // right Btn0 => Btn0
-      m_data->data[0] &= ~0x2;  // release right btn
-    } else {  // right Btn1 => Btn1
-      if (mpr_algParameter.cnt_dat >= mpr_algParameter.long_touch_cnt) {
-        m_data->RightBtn = 1; // right btn = 1
+  } else if (now_dat < pre_dat) { // swip to left
+    if (!(dir & 1)) dir = DIRECT_LEFT;
+    else {
+      dir += 2;
+      if (dir == DIRECT_JUDGE_LEFT) { // judge to swipe left
+        dir = DIRECT_OTHER;
+        TouchbarDat.swip_left = TRUE;
+        goto touchbar_judge_end;
       }
     }
   }
+  /* judge left touch */
+  if (__BOOL__(now_dat & 0x3) != __BOOL__(pre_dat & 0x3)) { // LBtn0 => LBtn1 or LBtn1 => LBtn0
+    if (__iBOOL__(now_dat & 0x3)) { // LBtn1 => LBtn0
+      if (mpr_algParameter.l_cnt_dat >= FILTER_CNT) {
+        mpr_algParameter.dbtn_dat = now_dat; // next touch is double touch
+      }
+      m_data->LeftBtn = 0;  // release mouse left btn
+    }
+    mpr_algParameter.l_cnt_dat = 0;
+  } else {  // LBtn1 => LBtn1 or LBtn0 => LBtn0
+    mpr_algParameter.l_cnt_dat = __LIMIT__(mpr_algParameter.l_cnt_dat+1, 65534);
+    if (__iBOOL__(now_dat & 0x3)) { // LBtn0 => LBtn0
+      if (mpr_algParameter.l_cnt_dat >= mpr_algParameter.double_touch_cnt) {
+        mpr_algParameter.dbtn_dat = 0;
+      }
+    } else {  // LBtn1 => LBtn1
+      if (mpr_algParameter.dbtn_dat != 0) {
+        mpr_algParameter.dbtn_dat = 0;
+        m_data->LeftBtn = 1;  // press mouse left btn
+        MOTOR_GO();
+        goto touchbar_judge_end;
+      }
+    }
+  }
+  /* judge right touch */
+  if (__BOOL__(now_dat & 0x60) != __BOOL__(pre_dat & 0x60)) { // RBtn0 => RBtn1 or RBtn1 => RBtn0
+      if (__iBOOL__(now_dat & 0x60)) { // RBtn1 => RBtn0
+        m_data->RightBtn = 0;  // release mouse right btn
+      }
+      mpr_algParameter.r_cnt_dat = 0;
+  } else if (__BOOL__(now_dat & 0x60)) {  // RBtn1 => RBtn1
+    mpr_algParameter.r_cnt_dat = __LIMIT__(mpr_algParameter.r_cnt_dat+1, 65534);
+    if (mpr_algParameter.r_cnt_dat == mpr_algParameter.long_touch_cnt) {
+      m_data->RightBtn = 1; // press mouse right btn
+      MOTOR_GO();
+      goto touchbar_judge_end;
+    }
+  }
 
+  touchbar_judge_end:
   if ((m_data->data[0] & 0x7) != record) {
     touchbar_data_change = TRUE;
   }

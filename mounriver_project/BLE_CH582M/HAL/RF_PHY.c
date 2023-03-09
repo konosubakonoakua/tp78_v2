@@ -33,7 +33,7 @@ uint8_t TX_DATA[2] = {0xff, 0xff};
 *******************************************************************************/
 void DATAFLASH_Read_RForBLE(void)
 {
-  uint8_t rf_ready;
+  uint16_t rf_ready;
   HAL_Fs_Read_keyboard_cfg(FS_LINE_RF_READY, 1, &rf_ready);
   g_Ready_Status.rf = rf_ready ? TRUE : FALSE;
 }
@@ -46,7 +46,8 @@ void DATAFLASH_Read_RForBLE(void)
 *******************************************************************************/
 void DATAFLASH_Write_RForBLE(uint8_t rf_ready)
 {
-  HAL_Fs_Write_keyboard_cfg(FS_LINE_RF_READY, 1, &rf_ready);
+  uint16_t w_rf_ready = rf_ready;
+  HAL_Fs_Write_keyboard_cfg(FS_LINE_RF_READY, 1, &w_rf_ready);
 }
 
 /*********************************************************************

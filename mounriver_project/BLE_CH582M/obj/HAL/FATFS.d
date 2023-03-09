@@ -32,7 +32,6 @@ HAL/FATFS.o: ../HAL/FATFS.c \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/HAL.h \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/BLE.h \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/CONFIG.h \
- E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/MSG_CP.h \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/HW_I2C.h \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/I2C_TP.h \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/MPR121.h \
@@ -43,7 +42,8 @@ HAL/FATFS.o: ../HAL/FATFS.c \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/KEYBOARD.h \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/BATTERY.h \
  E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/WS2812.h \
- E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/CORE.h
+ E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/CORE.h \
+ E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/MODULE_DEMO.h
 
 E:\Project\tp78_v2\mounriver_project\BLE_CH582M\Packages\FatFs/diskio.h:
 
@@ -111,8 +111,6 @@ E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/BLE.h:
 
 E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/CONFIG.h:
 
-E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/MSG_CP.h:
-
 E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/HW_I2C.h:
 
 E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/I2C_TP.h:
@@ -134,3 +132,5 @@ E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/BATTERY.h:
 E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/WS2812.h:
 
 E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/CORE.h:
+
+E:\Project\tp78_v2\mounriver_project\BLE_CH582M\HAL\include/MODULE_DEMO.h:

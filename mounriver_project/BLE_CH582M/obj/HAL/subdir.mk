@@ -16,6 +16,7 @@ C_SRCS += \
 ../HAL/OLED.c \
 ../HAL/OLEDFONT.c \
 ../HAL/OLED_UI.c \
+../HAL/OLED_UI_CFG.c \
 ../HAL/RF_PHY.c \
 ../HAL/RTC.c \
 ../HAL/USB.c \
@@ -34,6 +35,7 @@ OBJS += \
 ./HAL/OLED.o \
 ./HAL/OLEDFONT.o \
 ./HAL/OLED_UI.o \
+./HAL/OLED_UI_CFG.o \
 ./HAL/RF_PHY.o \
 ./HAL/RTC.o \
 ./HAL/USB.o \
@@ -52,6 +54,7 @@ C_DEPS += \
 ./HAL/OLED.d \
 ./HAL/OLEDFONT.d \
 ./HAL/OLED_UI.d \
+./HAL/OLED_UI_CFG.d \
 ./HAL/RF_PHY.d \
 ./HAL/RTC.d \
 ./HAL/USB.d \

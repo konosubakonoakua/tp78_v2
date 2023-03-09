@@ -64,6 +64,13 @@ typedef union {
     uint8_t data[8];
 }Keyboard_Data_t;
 
+/* Touchbar data format */
+typedef struct _Touchbar_Data_t{
+    uint8_t swip_left : 1;
+    uint8_t swip_right : 1;
+    uint8_t reserved : 6;
+}Touchbar_Data_t;
+
 #define MouseDat        ((Mouse_Data_t*)HIDMouse)
 #define KeyboardDat     ((Keyboard_Data_t*)HIDKeyboard)
 
@@ -75,7 +82,6 @@ typedef union {
 #include "USB.h"
 #include "PS2.h"
 #include "BLE.h"
-#include "MSG_CP.h"
 #include "HW_I2C.h"
 #include "I2C_TP.h"
 #include "MPR121.h"
@@ -86,6 +92,7 @@ typedef union {
 #include "BATTERY.h"
 #include "WS2812.h"
 #include "CORE.h"
+#include "MODULE_DEMO.h"
 
 /* hal task Event */
 #define LED_BLINK_EVENT                     0x0001
@@ -96,8 +103,9 @@ typedef union {
 #define OLED_UI_EVENT                       0x0020
 #define USB_READY_EVENT                     0x0040
 #define MPR121_EVENT                        0x0080
-#define SYST_EVENT                          0x0100
-#define CP_INITIAL_EVENT                    0x0200
+#define FEEDDOG_EVENT                       0x0100
+#define MOTOR_STOP_EVENT                    0x0200
+#define MODULE_INITIAL_EVENT                0x0400
 #define HAL_REG_INIT_EVENT                  0x2000
 #define HAL_TEST_EVENT                      0x4000
 
@@ -128,13 +136,14 @@ typedef union {
 #define DATAFLASH_ADDR_MPR121_ALG_Param     (10*1024+12)  // MPR121算法参数存储
 #endif
 
-#define IDLE_MAX_PERIOD                     240           // idle_cnt大于该值则进入屏保，单位为500ms
-#define LP_MAX_PERIOD                       480           // idle_cnt大于该值则进入低功耗模式，单位为500ms
+#define IDLE_MAX_PERIOD                     200           // idle_cnt大于该值则进入屏保，单位为100ms
+#define LP_MAX_PERIOD                       400           // idle_cnt大于该值则进入低功耗模式，单位为100ms
 
 #define MOTOR_PIN                           GPIO_Pin_19
 #define MOTOR_RUN()                         { GPIOB_SetBits( MOTOR_PIN ); }
 #define MOTOR_STOP()                        { GPIOB_ResetBits( MOTOR_PIN ); }
-#define MOTOR_Init()                        { GPIOB_SetBits( MOTOR_PIN ); GPIOB_ModeCfg( MOTOR_PIN, GPIO_ModeOut_PP_5mA ); GPIOB_ResetBits( MOTOR_PIN ); }
+#define MOTOR_Init()                        { GPIOB_SetBits( MOTOR_PIN ); GPIOB_ModeCfg( MOTOR_PIN, GPIO_ModeOut_PP_5mA ); MOTOR_STOP(); }
+#define MOTOR_GO()                          { MOTOR_RUN(); tmos_start_task( halTaskID, MOTOR_STOP_EVENT, MS1_TO_SYSTEM_TIME(100) ); }
 
 /* CapsLock LEDOn Status */
 #define USB_CAPSLOCK_LEDON_BIT              0x1
@@ -165,7 +174,7 @@ typedef struct _Ready_Status_t
     uint8_t usb_l : 1;
     uint8_t ble_l : 1;
     uint8_t rf_l : 1;
-    uint8_t cp : 1;
+    uint8_t module : 1;
     uint8_t fatfs : 1;
     uint8_t keyboard_key_data : 1;
     uint8_t keyboard_mouse_data : 1;
@@ -196,6 +205,7 @@ extern tmosTaskID halTaskID;
 extern CapsLock_LEDOn_Status_t g_CapsLock_LEDOn_Status;
 extern Ready_Status_t g_Ready_Status;
 extern Enable_Status_t g_Enable_Status;
+extern enum LP_Type g_lp_type;
 
 /*********************************************************************
  * GLOBAL FUNCTIONS
@@ -211,7 +221,7 @@ void SW_OLED_Capslock_Process( void );
 void SW_OLED_UBStatus_Process( void );
 void HW_Battery_Process( void );
 void HW_WS2812_Process( void );
-void HW_MSG_CP_Process( void );
+void HW_MODULE_DEMO_Process( void );
 void HW_TouchBar_Process( void );
 
 extern void HAL_Init( void );

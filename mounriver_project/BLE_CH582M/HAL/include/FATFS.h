@@ -17,16 +17,24 @@
   #define FS_LINE_BLE_DEVICE            0
   #define FS_LINE_LED_STYLE             1
   #define FS_LINE_RF_READY              2
-  #define FS_LINE_MPR_ALG_MAGIC         3
-  #define FS_LINE_MPR_TOUCHBAR_TOU_THR  4
-  #define FS_LINE_MPR_TOUCHBAR_REL_THR  5
-  #define FS_LINE_MPR_CAPMOUSE_TOU_THR  6
-  #define FS_LINE_MPR_CAPMOUSE_REL_THR  7
+  #define FS_LINE_UDISK_MODE            3
+  #define FS_LINE_MPR_ALG_MAGIC         4
+  #define FS_LINE_MPR_CAPMOUSE_TOU_THR  5
+  #define FS_LINE_MPR_CAPMOUSE_REL_THR  6
+  #define FS_LINE_MPR_CAPMOUSE_MOV_SPD  7
+  #define FS_LINE_MPR_TOUCHBAR_TOU_THR  8
+  #define FS_LINE_MPR_TOUCHBAR_REL_THR  9
+  #define FS_LINE_MPR_DOUBLE_TOUCH_CNT  10
+  #define FS_LINE_MPR_LONG_TOUCH_CNT    11
+
+  uint8_t unsigned_dec_to_string(uint16_t num, char *buff, uint8_t type);
+  uint8_t string_dec_to_u16(char *buff, uint16_t *num);
+  uint8_t string_dec_to_u8(char *buff, uint8_t *num);
 
   void HAL_Fs_Init(char* debug_info);
-  void HAL_Fs_Create_keyboard_cfg(uint8_t len, uint8_t* p_cfg);
-  void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg);
-  void HAL_Fs_Read_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg);
+  void HAL_Fs_Create_keyboard_cfg(uint8_t len, uint16_t* p_cfg);
+  void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint16_t* p_cfg);
+  void HAL_Fs_Read_keyboard_cfg(uint8_t fs_line, uint8_t len, uint16_t* p_cfg);
   void HAL_Fs_Write_keyboard_spkey(uint8_t* hid_arr);
   void HAL_Fs_Read_keyboard_spkey(uint8_t* hid_arr);
   void HAL_Fs_Write_keyboard_mat(const uint8_t* fp, const uint8_t* key_arr);

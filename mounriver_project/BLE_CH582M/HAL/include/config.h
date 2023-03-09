@@ -119,16 +119,16 @@
 #define SW_PAINTEDEGG               TRUE          // 彩蛋
 #endif
 #ifndef HAL_I2C_TP
-#define HAL_I2C_TP                  TRUE         // I2C小红点
+#define HAL_I2C_TP                  FALSE         // I2C小红点
 #endif
 #ifndef HAL_MPR121_CAPMOUSE
-#define HAL_MPR121_CAPMOUSE         FALSE          // MPR121触摸板
+#define HAL_MPR121_CAPMOUSE         TRUE          // MPR121触摸板
 #endif
 #ifndef HAL_MPR121_TOUCHBAR
 #define HAL_MPR121_TOUCHBAR         TRUE          // MPR121触摸条
 #endif
-#ifndef MSG_CP
-#define MSG_CP                      FALSE          // CP通讯
+#ifndef HAL_MODULE
+#define HAL_MODULE                  FALSE          // 扩展模块demo
 #endif
 #ifndef TEM_SAMPLE
 #define TEM_SAMPLE									TRUE          // 温度采样

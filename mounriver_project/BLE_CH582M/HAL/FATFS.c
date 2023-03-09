@@ -20,11 +20,15 @@ const BYTE WriteBuffer[] = {
     "LINE1:默认蓝牙设备(1~4)\n"
     "LINE2:默认LED模式(0~4)\n"
     "LINE3:是否启用RF(0~1)\n"
-    "LINE4:MPR_alg_magic\n"
-    "LINE5:MPR_touchbar_tou_thr\n"
-    "LINE6:MPR_touchbar_rel_thr\n"
-    "LINE7:MPR_capmouse_tou_thr\n"
-    "LINE8:MPR_capmouse_rel_thr\n"
+    "LINE4:是否启动U盘(仅下次生效)\n"
+    "LINE5:MPR_alg_magic\n"
+    "LINE6:MPR_capmouse_tou_thr\n"
+    "LINE7:MPR_capmouse_rel_thr\n"
+    "LINE8:MPR_capmouse_move_speed\n"
+    "LINE9:MPR_touchbar_tou_thr\n"
+    "LINE10:MPR_touchbar_rel_thr\n"
+    "LINE11:MPR_double_touch_cnt\n"
+    "LINE12:MPR_long_touch_cnt\n"
     "keyboard_spkey.txt---存放sp按键映射键位(每行8byte)\n"
     "LINE1:spKEY1的HID报表数据\n"
     "LINE2:spKEY2的HID报表数据\n"
@@ -80,19 +84,21 @@ void HAL_Fs_Init(char* debug_info)
 }
 
 /*******************************************************************************
-* Function Name  : u8_dec_to_string
-* Description    : u8类型转换为十进制字符串
-* Input          : num - u8类型; buff - char指针存放字符串;
+* Function Name  : unsigned_dec_to_string
+* Description    : 无符号类型转换为十进制字符串
+* Input          : num - u16类型; buff - char指针存放字符串;
 *                  type - 0默认, 1末尾放置空格, 2末尾放置换行
 * Return         : 字符串长度
 *******************************************************************************/
-uint8_t u8_dec_to_string(uint8_t num, char *buff, uint8_t type)
+uint8_t unsigned_dec_to_string(uint16_t num, char *buff, uint8_t type)
 {
   uint8_t len, ret;
 
   if (num <= 9) len = 1;
   else if (num <= 99) len = 2;
-  else len = 3;
+  else if (num <= 999) len = 3;
+  else if (num <= 9999) len = 4;
+  else len = 5; // u8 max 255, u16 max 65536
 
   if (type == 1) {
     buff[len] = ' ';
@@ -138,12 +144,33 @@ uint8_t string_dec_to_u8(char *buff, uint8_t *num)
 }
 
 /*******************************************************************************
+* Function Name  : string_dec_to_u16
+* Description    : 十进制字符串转换为u16类型
+* Input          : buff - char指针存放字符串; num - u16类型存放的指针
+* Return         : 指向数字末尾+1个字符
+*******************************************************************************/
+uint8_t string_dec_to_u16(char *buff, uint16_t *num)
+{
+  uint8_t ret = 1;
+  *num = 0;
+
+  while (*buff != '\0' && *buff != ' ' && *buff != '\n') {
+    *num *= 10;
+    *num += *buff - '0';
+    buff++;
+    ret++;
+  }
+
+  return ret;
+}
+
+/*******************************************************************************
 * Function Name  : HAL_Fs_Create_keyboard_cfg
 * Description    : 读取keyboard_cfg.txt参数
 * Input          : len - 写入长度, 单位: 行数(至少为1); p_cfg - 参数指针
 * Return         : None
 *******************************************************************************/
-void HAL_Fs_Create_keyboard_cfg(uint8_t len, uint8_t* p_cfg)
+void HAL_Fs_Create_keyboard_cfg(uint8_t len, uint16_t* p_cfg)
 {
   FATFS fs;
   FIL fnew;
@@ -163,7 +190,7 @@ void HAL_Fs_Create_keyboard_cfg(uint8_t len, uint8_t* p_cfg)
   if ( res_flash != FR_OK ) goto fs_create_kbd_cfg_end;
 
   while (len) {
-    l += u8_dec_to_string(*p_cfg, &wr_buf[l], 2);
+    l += unsigned_dec_to_string(*p_cfg, &wr_buf[l], 2);
     p_cfg++;
     len--;
   }
@@ -181,7 +208,7 @@ void HAL_Fs_Create_keyboard_cfg(uint8_t len, uint8_t* p_cfg)
 * Input          : fs_line - 开始行数(0为第1行); len - 写入长度, 单位: 行数(至少为1); p_cfg - 参数指针
 * Return         : None
 *******************************************************************************/
-void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg)
+void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint16_t* p_cfg)
 {
   FATFS fs;
   FIL fnew;
@@ -191,6 +218,7 @@ void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg)
 
   uint8_t l = 0;
   uint8_t rd_buf[512];
+  uint16_t temp;
 
   if (g_Ready_Status.fatfs == FALSE) return;
 
@@ -202,12 +230,12 @@ void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg)
 
   res_flash = f_read(&fnew, rd_buf, sizeof(rd_buf), &fnum);
   while (fs_line) {
-    l += string_dec_to_u8(&rd_buf[l], p_cfg);
+    l += string_dec_to_u16(&rd_buf[l], &temp);
     fs_line--;
   }
   fs_line = l;
   while (len) {
-    l += u8_dec_to_string(*p_cfg, &rd_buf[l], 2);
+    l += unsigned_dec_to_string(*p_cfg, &rd_buf[l], 2);
     p_cfg++;
     len--;
   }
@@ -226,7 +254,7 @@ void HAL_Fs_Write_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg)
 * Input          : fs_line - 开始行数(0为第1行); len - 读取长度, 单位: 行数(至少为1); p_cfg - 参数指针
 * Return         : None
 *******************************************************************************/
-void HAL_Fs_Read_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg)
+void HAL_Fs_Read_keyboard_cfg(uint8_t fs_line, uint8_t len, uint16_t* p_cfg)
 {
   FATFS fs;
   FIL fnew;
@@ -247,11 +275,11 @@ void HAL_Fs_Read_keyboard_cfg(uint8_t fs_line, uint8_t len, uint8_t* p_cfg)
 
   res_flash = f_read(&fnew, rd_buf, sizeof(rd_buf), &fnum);
   while (fs_line) {
-    l += string_dec_to_u8(&rd_buf[l], p_cfg);
+    l += string_dec_to_u16(&rd_buf[l], p_cfg);
     fs_line--;
   }
   while (len) {
-    l += string_dec_to_u8(&rd_buf[l], p_cfg);
+    l += string_dec_to_u16(&rd_buf[l], p_cfg);
     p_cfg++;
     len--;
   }
@@ -290,8 +318,8 @@ void HAL_Fs_Write_keyboard_spkey(uint8_t* hid_arr)
   len = 0;
   for (i = 0; i < SP_KEY_NUMBER; i++) {
     for (j = 0; j < 8; j++) {
-      if (j == 7) len += u8_dec_to_string(hid_arr[j + i * 8], &wr_buf[len], 2);
-      else len += u8_dec_to_string(hid_arr[j + i * 8], &wr_buf[len], 1);
+      if (j == 7) len += unsigned_dec_to_string(hid_arr[j + i * 8], &wr_buf[len], 2);
+      else len += unsigned_dec_to_string(hid_arr[j + i * 8], &wr_buf[len], 1);
     }
   }
 
@@ -373,8 +401,8 @@ void HAL_Fs_Write_keyboard_mat(const uint8_t* fp, const uint8_t* key_arr)
   len = 0;
   for (i = 0; i < ROW_SIZE; i++) {
     for (j = 0; j < COL_SIZE; j++) {
-      if (j == COL_SIZE - 1) len += u8_dec_to_string(key_arr[i + j * ROW_SIZE], &wr_buf[len], 2);
-      else len += u8_dec_to_string(key_arr[i + j * ROW_SIZE], &wr_buf[len], 1);
+      if (j == COL_SIZE - 1) len += unsigned_dec_to_string(key_arr[i + j * ROW_SIZE], &wr_buf[len], 2);
+      else len += unsigned_dec_to_string(key_arr[i + j * ROW_SIZE], &wr_buf[len], 1);
     }
   }
 

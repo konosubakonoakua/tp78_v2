@@ -10,8 +10,8 @@
 
 #include "HAL.h"
 
-__attribute__((aligned(4))) UINT32 LED_DMA_Buffer[LED_Number*24 + RESET_FRAME_SIZE] = { TIMING_RESET };  // LED的PWM脉冲翻转计数值缓冲区，RESET时间为42*1.25us
-UINT8 LED_BYTE_Buffer[LED_Number][3] = { 0 };
+__attribute__((aligned(4))) UINT32 LED_DMA_Buffer[LED_NUMBER*24 + RESET_FRAME_SIZE] = { TIMING_RESET };  // LED的PWM脉冲翻转计数值缓冲区，RESET时间为42*1.25us
+UINT8 LED_BYTE_Buffer[LED_NUMBER][3] = { 0 };
 WS2812_Style_Func led_style_func = WS2812_Style_Off;  // 默认背光函数
 static uint8_t style_dir = 0;
 static uint32_t style_cnt = 0;
@@ -24,9 +24,9 @@ static uint32_t style_cnt = 0;
 *******************************************************************************/
 uint8_t DATAFLASH_Read_LEDStyle( void )
 {
-  uint8_t LED_Style_Number;
+  uint16_t LED_Style_Number;
   HAL_Fs_Read_keyboard_cfg(FS_LINE_LED_STYLE, 1, &LED_Style_Number);
-  keyboard_status.changeBL = TRUE;
+  g_keyboard_status.changeBL = TRUE;
   switch (LED_Style_Number)
   {
     case 0:
@@ -58,7 +58,7 @@ uint8_t DATAFLASH_Read_LEDStyle( void )
 * Input          : LED_Style_Number
 * Return         : None
 *******************************************************************************/
-void DATAFLASH_Write_LEDStyle( uint8_t LED_Style_Number )
+void DATAFLASH_Write_LEDStyle( uint16_t LED_Style_Number )
 {
   uint8_t check;
 
@@ -102,7 +102,7 @@ void WS2812_PWM_Init( void )
 void WS2812_Style_Off( void )
 {
   uint16_t i;
-  for (i = 0; i < LED_Number*24; i++) LED_DMA_Buffer[i] = TIMING_ZERO;
+  for (i = 0; i < LED_NUMBER*24; i++) LED_DMA_Buffer[i] = TIMING_ZERO;
 }
 
 /*******************************************************************************
@@ -114,7 +114,7 @@ void WS2812_Style_Off( void )
 void WS2812_Style_Breath( void )
 {
   uint16_t i, j, memaddr = 0;
-  for (i = 0; i < LED_Number; i++)
+  for (i = 0; i < LED_NUMBER; i++)
   {
     /* transfer data */
     for (j = 0; j < 8; j++) // GREEN data
@@ -161,7 +161,7 @@ void WS2812_Style_Waterful( void )
   uint32_t slow_cnt;
   if (style_cnt % Waterful_Repeat_Times != 0) {  // 控制周期*Waterful_Repeat_Times = 流水灯周期
     ++style_cnt;
-    if (style_cnt >= LED_Number * 3 * Waterful_Repeat_Times ) { // GRB轮流切换 + 120ms移动一个灯
+    if (style_cnt >= LED_NUMBER * 3 * Waterful_Repeat_Times ) { // GRB轮流切换 + 120ms移动一个灯
       style_cnt = 0;
     }
     return;
@@ -170,20 +170,20 @@ void WS2812_Style_Waterful( void )
   }
 
   // 关闭上一个灯
-  uint32_t last_cnt = slow_cnt == 0 ? LED_Number-1 : slow_cnt-1;
+  uint32_t last_cnt = slow_cnt == 0 ? LED_NUMBER-1 : slow_cnt-1;
   for (j = 0; j < 24; j++) {
-    LED_DMA_Buffer[(last_cnt % LED_Number) * 24 + j] = TIMING_ZERO;
+    LED_DMA_Buffer[(last_cnt % LED_NUMBER) * 24 + j] = TIMING_ZERO;
   }
   // 开启下一个灯
   for (j = 0; j < 24; j++) {
-    if ( j >= slow_cnt / LED_Number * 8 + 4 && j < slow_cnt / LED_Number * 8 + 8 ) {
-      LED_DMA_Buffer[(slow_cnt % LED_Number) * 24 + j] = TIMING_ONE;
+    if ( j >= slow_cnt / LED_NUMBER * 8 + 4 && j < slow_cnt / LED_NUMBER * 8 + 8 ) {
+      LED_DMA_Buffer[(slow_cnt % LED_NUMBER) * 24 + j] = TIMING_ONE;
     } else {
-      LED_DMA_Buffer[(slow_cnt % LED_Number) * 24 + j] = TIMING_ZERO;
+      LED_DMA_Buffer[(slow_cnt % LED_NUMBER) * 24 + j] = TIMING_ZERO;
     }
   }
   ++style_cnt;
-  if (style_cnt >= LED_Number * 3 * Waterful_Repeat_Times ) { // GRB轮流切换 + 120ms移动一个灯
+  if (style_cnt >= LED_NUMBER * 3 * Waterful_Repeat_Times ) { // GRB轮流切换 + 120ms移动一个灯
     style_cnt = 0;
   }
 }
@@ -197,7 +197,7 @@ void WS2812_Style_Waterful( void )
 void WS2812_Style_Touch( void )
 {
   uint16_t i, j, memaddr = 0;
-  for (i = 0; i < LED_Number; i++)
+  for (i = 0; i < LED_NUMBER; i++)
   {
     /* transfer data */
     for (j = 0; j < 8; j++) // GREEN data
@@ -232,7 +232,7 @@ void WS2812_Style_Rainbow( void )
 {
   signed int i;
   uint16_t j, memaddr = 0;
-  for (i = 0; i < LED_Number; i++)
+  for (i = 0; i < LED_NUMBER; i++)
   {
     /* transfer data */
     for (j = 0; j < 8; j++) // GREEN data
@@ -295,7 +295,7 @@ void WS2812_Style_Custom( void )
 {
   uint16_t i, j, memaddr = 0;
   /* transfer data */
-  for (i = 0; i < LED_Number; i++)
+  for (i = 0; i < LED_NUMBER; i++)
   {
     for (j = 0; j < 8; j++) // GREEN data
     {
@@ -325,9 +325,9 @@ void WS2812_Send( void )
 {
   uint16_t i;
 
-  if ( keyboard_status.changeBL == TRUE ) {
-    keyboard_status.changeBL = FALSE;
-    for (i = 0; i < LED_Number; i++) {  // memory set zero
+  if ( g_keyboard_status.changeBL == TRUE ) {
+    g_keyboard_status.changeBL = FALSE;
+    for (i = 0; i < LED_NUMBER; i++) {  // memory set zero
       LED_BYTE_Buffer[i][0] = LED_BYTE_Buffer[i][1] = LED_BYTE_Buffer[i][2] = 0;
     }
     style_dir = style_cnt = 0;
@@ -340,6 +340,6 @@ void WS2812_Send( void )
     TMR1_PWMInit( High_Level, PWM_Times_1 );
     TMR1_PWMCycleCfg( 75 );        // 周期 1.25us
   }
-  TMR1_DMACfg( ENABLE, (UINT16) (UINT32) LED_DMA_Buffer, (UINT16) (UINT32) (LED_DMA_Buffer + LED_Number*24 + RESET_FRAME_SIZE), Mode_Single );  // 启用DMA转换，从内存到外设
+  TMR1_DMACfg( ENABLE, (UINT16) (UINT32) LED_DMA_Buffer, (UINT16) (UINT32) (LED_DMA_Buffer + LED_NUMBER*24 + RESET_FRAME_SIZE), Mode_Single );  // 启用DMA转换，从内存到外设
 }
 

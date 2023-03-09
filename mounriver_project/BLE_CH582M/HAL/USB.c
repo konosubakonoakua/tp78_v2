@@ -215,6 +215,144 @@ const unsigned char usbd_descriptor[] = {
     0x00
 };
 
+#define USBD_CONFIG_DESCRIPTOR_SIZE_NO_MSC 84
+
+/*!< USBD Descriptor --- no msc */
+const unsigned char usbd_descriptor_no_msc[] = {
+/********************************************** Device Descriptor */
+    0x12,                                       /*!< bLength */
+    0x01,                                       /*!< bDescriptorType */
+    WBVAL(USBD_VERSION),                        /*!< bcdUSB */
+    0x00,                                       /*!< bDeviceClass */
+    0x00,                                       /*!< bDeviceSubClass */
+    0x00,                                       /*!< bDeviceProtocol */
+    0x40,                                       /*!< bMaxPacketSize */
+    WBVAL(USBD_VID),                            /*!< idVendor */
+    WBVAL(USBD_PID),                            /*!< idProduct */
+    WBVAL(USBD_PRODUCT_VERSION),                /*!< bcdDevice */
+    0x01,                                       /*!< iManufacturer */
+    0x02,                                       /*!< iProduct */
+    0x03,                                       /*!< iSerial */
+    0x01,                                       /*!< bNumConfigurations */
+/********************************************** Config Descriptor */
+    0x09,                                       /*!< bLength */
+    0x02,                                       /*!< bDescriptorType */
+    WBVAL(USBD_CONFIG_DESCRIPTOR_SIZE_NO_MSC),  /*!< wTotalLength */
+    0x03,                                       /*!< bNumInterfaces */
+    0x01,                                       /*!< bConfigurationValue */
+    0x00,                                       /*!< iConfiguration */
+    0xa0,                                       /*!< bmAttributes */
+    USBD_MAX_POWER,                             /*!< bMaxPower */
+/********************************************** Interface 0 Alternate 0 Descriptor */
+    0x09,                                       /*!< bLength */
+    0x04,                                       /*!< bDescriptorType */
+    0x00,                                       /*!< bInterfaceNumber */
+    0x00,                                       /*!< bAlternateSetting */
+    0x01,                                       /*!< bNumEndpoints */
+    0x03,                                       /*!< bInterfaceClass */
+    0x01,                                       /*!< bInterfaceSubClass */
+    0x01,                                       /*!< bInterfaceProtocol */
+    0x00,                                       /*!< iInterface */
+/********************************************** Class Specific Descriptor of HID */
+    0x09,                                       /*!< bLength */
+    0x21,                                       /*!< bDescriptorType */
+    WBVAL(USBD_HID_VERSION),                    /*!< bcdHID */
+    USBD_HID_COUNTRY_CODE,                      /*!< bCountryCode */
+    0x01,                                       /*!< bNumDescriptors */
+    0x22,                                       /*!< bDescriptorType */
+    WBVAL(USBD_IF0_AL0_HID_REPORT_DESC_SIZE),   /*!< wItemLength */
+/********************************************** Endpoint 0 Descriptor */
+    0x07,                                       /*!< bLength */
+    0x05,                                       /*!< bDescriptorType */
+    USBD_IF0_AL0_EP0_ADDR,                      /*!< bEndpointAddress */
+    0x03,                                       /*!< bmAttributes */
+    WBVAL(USBD_IF0_AL0_EP0_SIZE),               /*!< wMaxPacketSize */
+    USBD_IF0_AL0_EP0_INTERVAL,                  /*!< bInterval */
+/********************************************** Interface 1 Alternate 0 Descriptor */
+    0x09,                                       /*!< bLength */
+    0x04,                                       /*!< bDescriptorType */
+    0x01,                                       /*!< bInterfaceNumber */
+    0x00,                                       /*!< bAlternateSetting */
+    0x01,                                       /*!< bNumEndpoints */
+    0x03,                                       /*!< bInterfaceClass */
+    0x01,                                       /*!< bInterfaceSubClass */
+    0x02,                                       /*!< bInterfaceProtocol */
+    0x00,                                       /*!< iInterface */
+/********************************************** Class Specific Descriptor of HID */
+    0x09,                                       /*!< bLength */
+    0x21,                                       /*!< bDescriptorType */
+    WBVAL(USBD_HID_VERSION),                    /*!< bcdHID */
+    USBD_HID_COUNTRY_CODE,                      /*!< bCountryCode */
+    0x01,                                       /*!< bNumDescriptors */
+    0x22,                                       /*!< bDescriptorType */
+    WBVAL(USBD_IF1_AL0_HID_REPORT_DESC_SIZE),   /*!< wItemLength */
+/********************************************** Endpoint 0 Descriptor */
+    0x07,                                       /*!< bLength */
+    0x05,                                       /*!< bDescriptorType */
+    USBD_IF1_AL0_EP0_ADDR,                      /*!< bEndpointAddress */
+    0x03,                                       /*!< bmAttributes */
+    WBVAL(USBD_IF1_AL0_EP0_SIZE),               /*!< wMaxPacketSize */
+    USBD_IF1_AL0_EP0_INTERVAL,                  /*!< bInterval */
+/********************************************** Interface 2 Alternate 0 Descriptor */
+    0x09,                                       /*!< bLength */
+    0x04,                                       /*!< bDescriptorType */
+    0x02,                                       /*!< bInterfaceNumber */
+    0x00,                                       /*!< bAlternateSetting */
+    0x01,                                       /*!< bNumEndpoints */
+    0x03,                                       /*!< bInterfaceClass */
+    0x01,                                       /*!< bInterfaceSubClass */
+    0x00,                                       /*!< bInterfaceProtocol */
+    0x00,                                       /*!< iInterface */
+/********************************************** Class Specific Descriptor of HID */
+    0x09,                                       /*!< bLength */
+    0x21,                                       /*!< bDescriptorType */
+    WBVAL(USBD_HID_VERSION),                    /*!< bcdHID */
+    USBD_HID_COUNTRY_CODE,                      /*!< bCountryCode */
+    0x01,                                       /*!< bNumDescriptors */
+    0x22,                                       /*!< bDescriptorType */
+    WBVAL(USBD_IF2_AL0_HID_REPORT_DESC_SIZE),   /*!< wItemLength */
+/********************************************** Endpoint 0 Descriptor */
+    0x07,                                       /*!< bLength */
+    0x05,                                       /*!< bDescriptorType */
+    USBD_IF2_AL0_EP0_ADDR,                      /*!< bEndpointAddress */
+    0x03,                                       /*!< bmAttributes */
+    WBVAL(USBD_IF2_AL0_EP0_SIZE),               /*!< wMaxPacketSize */
+    USBD_IF2_AL0_EP0_INTERVAL,                  /*!< bInterval */
+/********************************************** Language ID String Descriptor */
+    0x04,                                       /*!< bLength */
+    0x03,                                       /*!< bDescriptorType */
+    WBVAL(USBD_LANGID_STRING),                  /*!< wLangID0 */
+/********************************************** String 1 Descriptor */
+/* CL_novel */
+    0x12,                                       /*!< bLength */
+    0x03,                                       /*!< bDescriptorType */
+    0x43, 0x00,                                 /*!< 'C' wcChar0 */
+    0x4c, 0x00,                                 /*!< 'L' wcChar1 */
+    0x5f, 0x00,                                 /*!< '_' wcChar2 */
+    0x6e, 0x00,                                 /*!< 'n' wcChar3 */
+    0x6f, 0x00,                                 /*!< 'o' wcChar4 */
+    0x76, 0x00,                                 /*!< 'v' wcChar5 */
+    0x65, 0x00,                                 /*!< 'e' wcChar6 */
+    0x6c, 0x00,                                 /*!< 'l' wcChar7 */
+/********************************************** String 2 Descriptor */
+/* TP78 */
+    0x0a,                                       /*!< bLength */
+    0x03,                                       /*!< bDescriptorType */
+    0x54, 0x00,                                 /*!< 'T' wcChar0 */
+    0x50, 0x00,                                 /*!< 'P' wcChar1 */
+    0x37, 0x00,                                 /*!< '7' wcChar2 */
+    0x38, 0x00,                                 /*!< '8' wcChar3 */
+/********************************************** String 3 Descriptor */
+/* v2.0 */
+    0x0a,                                       /*!< bLength */
+    0x03,                                       /*!< bDescriptorType */
+    0x76, 0x00,                                 /*!< 'v' wcChar0 */
+    0x32, 0x00,                                 /*!< '2' wcChar1 */
+    0x2e, 0x00,                                 /*!< '.' wcChar2 */
+    0x30, 0x00,                                 /*!< '0' wcChar3 */
+    0x00
+};
+
 /*!< USBD HID REPORT 0 Descriptor */
 const unsigned char usbd_hid_0_report_descriptor[USBD_IF0_AL0_HID_REPORT_DESC_SIZE] = {
         0x05, 0x01, // USAGE_PAGE (Generic Desktop)
@@ -358,16 +496,18 @@ struct usbd_interface intf1;
 struct usbd_interface intf2;
 struct usbd_interface intf3;
 
-void usb_device_init(void)
+/* modeÎª1³õÊ¼»¯UÅÌ */
+void usb_device_init(uint8_t mode)
 {
-    usbd_desc_register(usbd_descriptor);
+    if (mode) usbd_desc_register(usbd_descriptor);
+    else usbd_desc_register(usbd_descriptor_no_msc);
     usbd_add_interface(usbd_hid_init_intf(&intf0, usbd_hid_0_report_descriptor, USBD_IF0_AL0_HID_REPORT_DESC_SIZE));
     usbd_add_endpoint(&hid_keyboard_in_ep);
     usbd_add_interface(usbd_hid_init_intf(&intf1, usbd_hid_1_report_descriptor, USBD_IF1_AL0_HID_REPORT_DESC_SIZE));
     usbd_add_endpoint(&hid_mouse_in_ep);
     usbd_add_interface(usbd_hid_init_intf(&intf2, usbd_hid_2_report_descriptor, USBD_IF2_AL0_HID_REPORT_DESC_SIZE));
     usbd_add_endpoint(&hid_vol_in_ep);
-    usbd_add_interface(usbd_msc_init_intf(&intf3, USBD_IF3_AL0_EP0_ADDR, USBD_IF3_AL0_EP1_ADDR));
+    if (mode) usbd_add_interface(usbd_msc_init_intf(&intf3, USBD_IF3_AL0_EP0_ADDR, USBD_IF3_AL0_EP1_ADDR));
 
     usbd_initialize();
 }
@@ -402,7 +542,7 @@ void usbh_hid_set_report(uint8_t intf, uint8_t report_id, uint8_t report_type, u
 void usb_suspend_wake_up_cb(uint8_t type)
 {
     if (type) { // wake up
-        tmos_start_task( halTaskID, USB_READY_EVENT, 20 );
+        tmos_start_task( halTaskID, USB_READY_EVENT, 40 );
     } else {
         g_Ready_Status.usb = FALSE;
         tmos_clear_event( halTaskID, USB_READY_EVENT );
@@ -540,6 +680,8 @@ tmosEvents USB_ProcessEvent( tmosTaskID task_id, tmosEvents events )
 *******************************************************************************/
 void HAL_USBInit( void )
 {
+  uint16_t Udisk_mode = 0;
+
   usbTaskID = TMOS_ProcessEventRegister( USB_ProcessEvent );
   /* support to cherry usb */
   TMR0_TimerInit(FREQ_SYS / 1000);
@@ -547,7 +689,14 @@ void HAL_USBInit( void )
   PFIC_EnableIRQ(TMR0_IRQn);
   PFIC_SetPriority(TMR0_IRQn, 20);
   /* usb device init */
-  usb_device_init();
+  HAL_Fs_Read_keyboard_cfg(FS_LINE_UDISK_MODE, 1, &Udisk_mode);
+  if (Udisk_mode) {
+    Udisk_mode = 0;
+    HAL_Fs_Write_keyboard_cfg(FS_LINE_UDISK_MODE, 1, &Udisk_mode);
+    usb_device_init(1);
+  } else {
+    usb_device_init(0);
+  }
   while (!usb_device_is_configured());
 }
 
