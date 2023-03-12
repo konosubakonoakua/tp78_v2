@@ -251,27 +251,27 @@ void WS2812_Style_Rainbow( void )
       memaddr++;
     }
     /* 其他键盘布局需修改此处 */
-    if (i >= 0 && i <= 7) { // sixth row - RED - 8 LED
+    if (i >= 0 && i <= 13) { // first row - RED - 14 LED
       LED_BYTE_Buffer[i][GREEN_INDEX] = 0;
       LED_BYTE_Buffer[i][RED_INDEX] = 128 - ABS(i-0-(signed int)style_cnt*7/42)*17;
       LED_BYTE_Buffer[i][BLUE_INDEX] = 0;
-    } else if (i >= 8 && i <= 19) { // fifth row - CYAN - 12 LED
+    } else if ((i >= 14 && i <= 27) || i == 55) { // second row - CYAN - 15 LED
       LED_BYTE_Buffer[i][GREEN_INDEX] = 128 - ABS(i-8-(signed int)style_cnt*11/42)*11;
       LED_BYTE_Buffer[i][RED_INDEX] = 0;
       LED_BYTE_Buffer[i][BLUE_INDEX] = 128 - ABS(i-8-(signed int)style_cnt*11/42)*11;
-    } else if (i >= 20 && i <= 32) { // fourth row - YELLOW - 13 LED
+    } else if ((i >= 28 && i <= 41) || i == 68) { // third row - YELLOW - 15 LED
       LED_BYTE_Buffer[i][GREEN_INDEX] = 128 - ABS(i-20-(signed int)style_cnt*12/42)*10;
       LED_BYTE_Buffer[i][RED_INDEX] = 128 - ABS(i-20-(signed int)style_cnt*12/42)*10;
       LED_BYTE_Buffer[i][BLUE_INDEX] = 0;
-    } else if (i >= 33 && i <= 46) { // third row - PURPLE - 14 LED
+    } else if ((i >= 42 && i <= 54) || i == 82) { // fourth row - PURPLE - 14 LED
       LED_BYTE_Buffer[i][GREEN_INDEX] = 0;
       LED_BYTE_Buffer[i][RED_INDEX] = 128 - ABS(i-33-(signed int)style_cnt*13/42)*9;
       LED_BYTE_Buffer[i][BLUE_INDEX] = 128 - ABS(i-33-(signed int)style_cnt*13/42)*9;
-    } else if (i >= 47 && i <= 60) { // second row - BLUE - 14 LED
+    } else if ((i >= 56 && i <= 67) || i == 80 || i == 81) { // fifth row - BLUE - 14 LED
       LED_BYTE_Buffer[i][GREEN_INDEX] = 0;
       LED_BYTE_Buffer[i][RED_INDEX] = 0;
       LED_BYTE_Buffer[i][BLUE_INDEX] = 128 - ABS(i-47-(signed int)style_cnt*13/42)*9;
-    } else if (i >= 61 && i <= 74) { // first row - GREEN - 14 LED
+    } else if (i >= 69 && i <= 79) { // sixth row - GREEN - 11 LED
       LED_BYTE_Buffer[i][GREEN_INDEX] = 128 - ABS(i-61-(signed int)style_cnt*13/42)*9;
       LED_BYTE_Buffer[i][RED_INDEX] = 0;
       LED_BYTE_Buffer[i][BLUE_INDEX] = 0;

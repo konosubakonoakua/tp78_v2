@@ -384,10 +384,6 @@ uint16 HidEmu_ProcessEvent( uint8 task_id, uint16 events )
 #ifdef OLED_0_91
       OLED_ShowNum(44, 1, DeviceAddress[5], 1);
 #endif
-#ifdef OLED_0_66
-      OLED_UI_add_SHOWINFO_task("BLE Dev %d", DeviceAddress[5]);
-      OLED_UI_add_CANCELINFO_delay_task(100);
-#endif
       BLE_SelectHostIndex = DeviceAddress[5] - 1;
       if ( hidEmuConnHandle != GAP_CONNHANDLE_INIT ) {
         GAPRole_TerminateLink( hidEmuConnHandle );  // disconnect

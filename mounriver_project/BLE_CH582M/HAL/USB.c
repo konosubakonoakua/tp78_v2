@@ -521,7 +521,7 @@ tmosTaskID usbTaskID = INVALID_TASK_ID;
 
 void usbd_configure_done_callback(void)
 {
-    /* no out ep, do nothing */
+    tmos_start_task( halTaskID, USB_READY_EVENT, 30 );
 }
 
 void usbh_hid_set_idle(uint8_t intf, uint8_t report_id, uint8_t duration)
@@ -542,7 +542,7 @@ void usbh_hid_set_report(uint8_t intf, uint8_t report_id, uint8_t report_type, u
 void usb_suspend_wake_up_cb(uint8_t type)
 {
     if (type) { // wake up
-        tmos_start_task( halTaskID, USB_READY_EVENT, 40 );
+        tmos_start_task( halTaskID, USB_READY_EVENT, 30 );
     } else {
         g_Ready_Status.usb = FALSE;
         tmos_clear_event( halTaskID, USB_READY_EVENT );
@@ -689,6 +689,9 @@ void HAL_USBInit( void )
   PFIC_EnableIRQ(TMR0_IRQn);
   PFIC_SetPriority(TMR0_IRQn, 20);
   /* usb device init */
+#ifdef FIRST_USED
+  usb_device_init(1);
+#else
   HAL_Fs_Read_keyboard_cfg(FS_LINE_UDISK_MODE, 1, &Udisk_mode);
   if (Udisk_mode) {
     Udisk_mode = 0;
@@ -697,6 +700,7 @@ void HAL_USBInit( void )
   } else {
     usb_device_init(0);
   }
+#endif
   while (!usb_device_is_configured());
 }
 

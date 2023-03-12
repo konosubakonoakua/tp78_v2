@@ -279,7 +279,7 @@ UINT8 KEYBOARD_Custom_Function( void )
         if (g_keyboard_status.enter_cfg) {  // 退出界面配置
 #ifdef HAL_OLED
 #ifdef OLED_0_66
-          OLED_UI_add_CLEARPAGE_task(3, 6);
+          OLED_UI_add_CLEARPAGE_task(2, 5);
 #endif
 #ifdef OLED_0_91
           // TODO
@@ -333,6 +333,7 @@ UINT8 KEYBOARD_Custom_Function( void )
           g_Enable_Status.paintedegg = TRUE;
         } else {
           OLED_UI_show_version(0);  // 取消显示版本信息
+          led_style_func = WS2812_Style_Off;
           g_Enable_Status.paintedegg = FALSE;
         }
         break;
@@ -343,17 +344,17 @@ UINT8 KEYBOARD_Custom_Function( void )
           uint8_t ena_ble = g_Enable_Status.ble;
           bStatus_t status = GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &ena_ble );
           if ( status != SUCCESS ) OLED_UI_add_SHOWINFO_task("ERR %d", status);
-          else if ( g_Enable_Status.ble == TRUE ) OLED_UI_add_SHOWINFO_task("BLE ENA");
-          else OLED_UI_add_SHOWINFO_task("BLE DIS");
-          OLED_UI_add_CANCELINFO_delay_task(3000);
+          else if ( g_Enable_Status.ble == TRUE ) OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_BLE_UNCONNECT_IDX, " ON");
+          else OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_BLE_UNCONNECT_IDX, " OFF");
+          OLED_UI_add_CANCELINFO_delay_task(2000);
         }
         break;
       case Fn_Mode_DisEnableTP:
         Fn_Mode = Fn_Mode_None; // Fn+T关闭/开启小红点
         g_Enable_Status.tp = !g_Enable_Status.tp;
-        if ( g_Enable_Status.tp == TRUE ) OLED_UI_add_SHOWINFO_task("TP ENA");
-        else OLED_UI_add_SHOWINFO_task("TP DIS");
-        OLED_UI_add_CANCELINFO_delay_task(3000);
+        if ( g_Enable_Status.tp == TRUE ) OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_TP_IDX, " ON");
+        else OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_TP_IDX, " OFF");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
         break;
       case Fn_Mode_UDiskMode:
         Fn_Mode = Fn_Mode_None; // Fn+U开启U盘模式
@@ -382,14 +383,16 @@ UINT8 KEYBOARD_Custom_Function( void )
           }
           OLED_UI_add_default_task(OLED_UI_FLAG_DRAW_SLOT);
 #endif
-          if ( priority_USB ) OLED_UI_add_SHOWINFO_task("PRI USB");
-          else if ( g_Ready_Status.rf == FALSE ) OLED_UI_add_SHOWINFO_task("PRI BLE");
-          else OLED_UI_add_SHOWINFO_task("PRI RF");
-          OLED_UI_add_CANCELINFO_delay_task(3000);
+          if ( priority_USB ) OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_USB_IDX, "Priority");
+          else if ( g_Ready_Status.rf == FALSE ) OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_BLE_UNCONNECT_IDX, "Priority");
+          else OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_RF_IDX, "Priority");
+          OLED_UI_add_CANCELINFO_delay_task(2000);
         }
         break;
       case Fn_Mode_SelectDevice1 ... Fn_Mode_SelectDevice4: // 按Fn+1~4切换设备
         DeviceAddress[5] = Fn_Mode - Fn_Mode_SelectDevice1 + 1;
+        OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_BLE_UNCONNECT_IDX, "Device%d", DeviceAddress[5]);
+        OLED_UI_add_CANCELINFO_delay_task(2000);
         Fn_Mode = Fn_Mode_None;
         tmos_start_task( hidEmuTaskId, CHANGE_ADDR_EVT, 500 );
         break;
@@ -399,6 +402,10 @@ UINT8 KEYBOARD_Custom_Function( void )
 #ifdef OLED_0_91
         OLED_UI_add_SHOWSTRING_task(20, 1, "S0");
 #endif
+#ifdef OLED_0_66
+        OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_LED_STYLE_IDX, " OFF");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
+#endif
         led_style_func = WS2812_Style_Custom;  // Fn+F1 - 关闭背光(背光保持不变)
         break;
       case Fn_Mode_LED_Style2:
@@ -406,6 +413,10 @@ UINT8 KEYBOARD_Custom_Function( void )
         g_keyboard_status.changeBL = TRUE;
 #ifdef OLED_0_91
         OLED_UI_add_SHOWSTRING_task(20, 1, "S1");
+#endif
+#ifdef OLED_0_66
+        OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_LED_STYLE_IDX, "Breath");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
 #endif
         led_style_func = WS2812_Style_Breath;  // Fn+F2 - 背光使用呼吸灯模式
         break;
@@ -415,6 +426,10 @@ UINT8 KEYBOARD_Custom_Function( void )
 #ifdef OLED_0_91
         OLED_UI_add_SHOWSTRING_task(20, 1, "S2");
 #endif
+#ifdef OLED_0_66
+        OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_LED_STYLE_IDX, "Waterful");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
+#endif
         led_style_func = WS2812_Style_Waterful;  // Fn+F3 - 背光使用流水灯模式
         break;
       case Fn_Mode_LED_Style4:
@@ -423,6 +438,10 @@ UINT8 KEYBOARD_Custom_Function( void )
 #ifdef OLED_0_91
         OLED_UI_add_SHOWSTRING_task(20, 1, "S3");
 #endif
+#ifdef OLED_0_66
+        OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_LED_STYLE_IDX, "Touch");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
+#endif
         led_style_func = WS2812_Style_Touch;  // Fn+F4 - 背光使用触控呼吸灯模式
         break;
       case Fn_Mode_LED_Style5:
@@ -430,6 +449,10 @@ UINT8 KEYBOARD_Custom_Function( void )
         g_keyboard_status.changeBL = TRUE;
 #ifdef OLED_0_91
         OLED_UI_add_SHOWSTRING_task(20, 1, "S4");
+#endif
+#ifdef OLED_0_66
+        OLED_UI_add_SHOW_ICONINFO_task(OLED_UI_ICON_LED_STYLE_IDX, "Rainbow");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
 #endif
         led_style_func = WS2812_Style_Rainbow;  // Fn+F5 - 背光使用彩虹灯模式
         break;
@@ -614,7 +637,7 @@ void KEYBOARD_Detection( void )
 *                  *preStr - 输入前的提示
 *                  *postStr - 输入完成的提示
 *                  *limit_len - 限制长度(为0不限制, 最长24)
-* Return         : 返回0表示输入完成
+* Return         : 返回0表示输入完成，返回0xFF表示清空输入
 *******************************************************************************/
 uint8_t KEYBOARD_EnterNumber(uint32_t *key, const char* preStr, const char* postStr, uint8_t limit_len)
 {
@@ -644,6 +667,10 @@ uint8_t KEYBOARD_EnterNumber(uint32_t *key, const char* preStr, const char* post
       passkey_str[idx++] = keyhash[KeyboardDat->Key1 - KEY_1] + 0x30;
       passkey_str[idx] = '\0';
       OLED_PRINT("%s", passkey_str);
+  } else if ( KeyboardDat->Key1 == KEY_ESCAPE ){  // Esc清空输入项
+      passkey = idx = passkey_str[0] = 0;
+      OLED_PRINT("%s", preStr);
+      return 0xFF;
   }
   return 1;
 }

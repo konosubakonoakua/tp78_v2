@@ -616,7 +616,7 @@ USBD_IRQHandler(void)
           usb_suspend_wake_up_cb(0);
       } else {
           /*!< Wake up */
-          usb_suspend_wake_up_cb(1);
+//          usb_suspend_wake_up_cb(1);
         }
         CH58x_USBFS_DEV->USB_INT_FG = RB_UIF_SUSPEND;
     } else {

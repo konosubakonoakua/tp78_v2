@@ -92,7 +92,7 @@
 #define HAL_USB                     TRUE          // USB
 #endif
 #ifndef HAL_PS2
-#define HAL_PS2                     FALSE         // PS/2小红点
+#define HAL_PS2                     TRUE         // PS/2小红点
 #endif
 #ifndef HAL_KEYBOARD
 #define HAL_KEYBOARD                TRUE          // 键盘
@@ -122,7 +122,7 @@
 #define HAL_I2C_TP                  FALSE         // I2C小红点
 #endif
 #ifndef HAL_MPR121_CAPMOUSE
-#define HAL_MPR121_CAPMOUSE         TRUE          // MPR121触摸板
+#define HAL_MPR121_CAPMOUSE         FALSE          // MPR121触摸板
 #endif
 #ifndef HAL_MPR121_TOUCHBAR
 #define HAL_MPR121_TOUCHBAR         TRUE          // MPR121触摸条
@@ -149,7 +149,7 @@
 #define CLK_OSC32K									2							// 该项请勿在此修改，必须在工程配置里的预处理中修改，如包含主机角色必须使用外部32K
 #endif
 #ifndef BLE_MEMHEAP_SIZE
-#define BLE_MEMHEAP_SIZE						(1024*6)
+#define BLE_MEMHEAP_SIZE						(1024*4)      // (1024*6)
 #endif
 #ifndef BLE_DEVICE_NUM
 #define BLE_DEVICE_NUM              6             // 记住蓝牙主机设备数目

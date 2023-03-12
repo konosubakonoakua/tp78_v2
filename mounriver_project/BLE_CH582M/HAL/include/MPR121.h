@@ -125,7 +125,7 @@
 
   #define MPR121_WriteReg(reg, dat)           HW_I2C_WR_Reg(reg, dat, MPR121_ADDR)
   #define MPR121_ReadReg(reg, pdat)           HW_I2C_RD_Reg(reg, pdat, MPR121_ADDR)
-  #define MPR121_ReadHalfWord(reg, pdat)      HW_I2C_Muti_RD_Reg(reg, (uint8*)pdat, MPR121_ADDR, 2);
+  #define MPR121_ReadHalfWord(reg, pdat)      HW_I2C_Muti_RD_Reg(reg, (uint8*)pdat, MPR121_ADDR, 2)
   #define MPR121_ReadMutiReg(reg, pdat, len)  HW_I2C_Muti_RD_Reg(reg, pdat, MPR121_ADDR, len)
 
   /* mpr121 algorithm */

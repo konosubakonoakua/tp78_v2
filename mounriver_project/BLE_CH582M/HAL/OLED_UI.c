@@ -76,11 +76,11 @@ static void OLED_UI_TP78Info(uint8_t *chr)
   // 清空原有信息
   uint8_t i;
   OLED_Set_Pos(0, 3);
-  for (i = 0; i < 64; i++) {
+  for (i = 0; i < OLED_WIDTH; i++) {
     OLED_WR_Byte(0x00, OLED_DATA);
   }
   // 定义左下角输出信息
-  OLED_ShowString(OLED_Midx(strlen(chr), 0, 64), 3, chr);
+  OLED_ShowString(OLED_Midx(strlen(chr), 0, OLED_WIDTH), 3, chr);
 #endif
 }
 
@@ -229,6 +229,38 @@ uint8_t OLED_UI_add_SHOWINFO_task(char *pstr, ...)
     index = index - OLED_UI_TASK_MAX;
   }
   oled_ui_task.oled_ui_draw[index].flag = OLED_UI_FLAG_SHOW_INFO;
+  strcpy(oled_ui_task.oled_ui_draw[index].pstr, pStr);  // assert strlen(pstr)+1 < OLED_UI_STR_LEN_MAX
+  oled_ui_task.size++;
+
+  return 0;
+}
+
+/*******************************************************************************
+* Function Name  : OLED_UI_add_SHOW_ICONINFO_task
+* Description    : OLED_UI添加打印图标和信息任务
+* Input          : icon_idx - UI_Slot_Icon index; pstr - pointer of string, and parameterization.
+* Return         : 0 - success, 1 - failed
+*******************************************************************************/
+uint8_t OLED_UI_add_SHOW_ICONINFO_task(uint8_t icon_idx, char *pstr, ...)
+{
+  char pStr[OLED_UI_STR_LEN_MAX] = {'\0'};
+  va_list ap;
+  uint8_t index;
+
+  if (oled_ui_task.size >= OLED_UI_TASK_MAX) {
+    return 1;
+  }
+
+  va_start(ap, pstr);
+  vsprintf((char*)pStr, pstr, ap);
+  va_end(ap);
+
+  index = oled_ui_task.head + oled_ui_task.size;
+  if (index >= OLED_UI_TASK_MAX) {
+    index = index - OLED_UI_TASK_MAX;
+  }
+  oled_ui_task.oled_ui_draw[index].flag = OLED_UI_FLAG_SHOW_ICONIFO;
+  oled_ui_task.oled_ui_draw[index].addr = (uint8_t*)&UI_Slot_Icon[icon_idx];
   strcpy(oled_ui_task.oled_ui_draw[index].pstr, pStr);  // assert strlen(pstr)+1 < OLED_UI_STR_LEN_MAX
   oled_ui_task.size++;
 
@@ -416,7 +448,7 @@ void OLED_UI_show_version(uint8_t ena)
     OLED_Scroll(5, 5, 16, 48, 2, 1, 0);
   } else {
     OLED_Clr(0, 2, 63, 8);
-    OLED_Scroll(7, 7, 24, 16, 2, 1, 0);
+    OLED_WR_Byte(0x2E, OLED_CMD);   // 停止滚动
   }
 #endif
 }
@@ -452,6 +484,7 @@ void OLED_UI_draw_menu(oled_ui_swipe fresh_type)
   uint32_t val;
   uint8_t i;
 
+  menu_fresh_start:
   switch (fresh_type)
   {
     case OLED_UI_MENU_REFRESH:  // 直接刷新
@@ -469,9 +502,19 @@ void OLED_UI_draw_menu(oled_ui_swipe fresh_type)
       } else if (*(oled_ui_menu_type*)cur_menu_p == OLED_UI_TYPE_ENTER_NUM) { // 输入项目
         i = KEYBOARD_EnterNumber(&val, preStr, P_EN_T(cur_menu_p)->postStr, P_EN_T(cur_menu_p)->limit_len);
         if (i == 0) { // 输入完成
-          HAL_Fs_Read_keyboard_cfg(P_EN_T(cur_menu_p)->line, 1, (uint16_t*)&val);
+          HAL_Fs_Write_keyboard_cfg(P_EN_T(cur_menu_p)->line, 1, (uint16_t*)&val);
           cur_menu_p = P_EN_T(cur_menu_p)->p; // 返回菜单类
+          goto menu_fresh_start;
+        } else if (i == 0xFF) { // 清空输入
+          cur_menu_p = P_EN_T(cur_menu_p)->p; // 返回菜单类
+          goto menu_fresh_start;
         }
+      } else if (*(oled_ui_menu_type*)cur_menu_p == OLED_UI_TYPE_MPR121_STATUS) { // MPR121状态项目
+        val = 0;
+        if (P_MPR_STS_T(cur_menu_p)->type == TRUE) MPR121_ReadHalfWord(P_MPR_STS_T(cur_menu_p)->reg, (uint16_t*)&val);
+        else MPR121_ReadReg(P_MPR_STS_T(cur_menu_p)->reg, (uint8_t*)&val);
+        OLED_PRINT("%d", val);
+        OLED_UI_add_default_delay_task(OELD_UI_FLAG_REFRESH_MENU, 20);
       }
       break;
     case OLED_UI_SWIPE_UP:  // 上滑
@@ -479,8 +522,9 @@ void OLED_UI_draw_menu(oled_ui_swipe fresh_type)
         if (menu_cur_idx == 0) {
           if (P_MENU_T(cur_menu_p)->p[OLED_UI_MENU_MAX_LEN+1] != NULL) {
             cur_menu_p = P_MENU_T(cur_menu_p)->p[OLED_UI_MENU_MAX_LEN+1];
-            menu_cur_idx = 2;
-            OLED_UI_draw_menu(OLED_UI_MENU_REFRESH);
+            menu_cur_idx = P_MENU_T(cur_menu_p)->menu_size - 1;
+            fresh_type = OLED_UI_MENU_REFRESH;
+            goto menu_fresh_start;
           }
           break;
         }
@@ -496,7 +540,8 @@ void OLED_UI_draw_menu(oled_ui_swipe fresh_type)
           if (P_MENU_T(cur_menu_p)->p[OLED_UI_MENU_MAX_LEN+2] != NULL) {
             cur_menu_p = P_MENU_T(cur_menu_p)->p[OLED_UI_MENU_MAX_LEN+2];
             menu_cur_idx = 0;
-            OLED_UI_draw_menu(OLED_UI_MENU_REFRESH);
+            fresh_type = OLED_UI_MENU_REFRESH;
+            goto menu_fresh_start;
           }
           break;
         }
@@ -511,20 +556,32 @@ void OLED_UI_draw_menu(oled_ui_swipe fresh_type)
         if (P_MENU_T(cur_menu_p)->p[OLED_UI_MENU_MAX_LEN] == NULL) break;
         cur_menu_p = P_MENU_T(cur_menu_p)->p[OLED_UI_MENU_MAX_LEN];
         menu_cur_idx = 0;
-        OLED_UI_draw_menu(OLED_UI_MENU_REFRESH);
+        fresh_type = OLED_UI_MENU_REFRESH;
+        goto menu_fresh_start;
+      } else if (*(oled_ui_menu_type*)cur_menu_p == OLED_UI_TYPE_MPR121_STATUS) {  // MPR121状态项目
+        if (P_MPR_STS_T(cur_menu_p)->p == NULL) break; // 错误的配置
+        cur_menu_p = P_MPR_STS_T(cur_menu_p)->p;
+        menu_cur_idx = 0;
+        fresh_type = OLED_UI_MENU_REFRESH;
+        goto menu_fresh_start;
       }
       break;
     case OLED_UI_SWIPE_RIGHT:  // 右滑
       if (*(oled_ui_menu_type*)cur_menu_p == OLED_UI_TYPE_MENU) { // 菜单类
         if (P_MENU_T(cur_menu_p)->p[menu_cur_idx] == NULL) break;
-        if (*(oled_ui_menu_type*)P_MENU_T(cur_menu_p)->p[menu_cur_idx] == OLED_UI_TYPE_ENTER_NUM) {
-          HAL_Fs_Read_keyboard_cfg(P_EN_T(P_MENU_T(cur_menu_p)->p[menu_cur_idx])->line, 1, (uint16_t*)&val);
-          memcpy(preStr, P_EN_T(P_MENU_T(cur_menu_p)->p[menu_cur_idx])->preStr, P_EN_T(P_MENU_T(cur_menu_p)->p[menu_cur_idx])->pStr_len);
-          unsigned_dec_to_string(val, &preStr[P_EN_T(P_MENU_T(cur_menu_p)->p[menu_cur_idx])->pStr_len], 0);
-        }
         cur_menu_p = P_MENU_T(cur_menu_p)->p[menu_cur_idx];
         menu_cur_idx = 0;
-        OLED_UI_draw_menu(OLED_UI_MENU_REFRESH);
+        if (*(oled_ui_menu_type*)cur_menu_p == OLED_UI_TYPE_ENTER_NUM) {  // 右滑后为输入项目
+          HAL_Fs_Read_keyboard_cfg(P_EN_T(cur_menu_p)->line, 1, (uint16_t*)&val);
+          memcpy(preStr, P_EN_T(cur_menu_p)->preStr, P_EN_T(cur_menu_p)->pStr_len);
+          unsigned_dec_to_string(val, &preStr[P_EN_T(cur_menu_p)->pStr_len], 0);
+          OLED_Clr(0, 2, OLED_WIDTH, 5);
+          OLED_PRINT("%s", preStr);
+        } else if (*(oled_ui_menu_type*)cur_menu_p == OLED_UI_TYPE_MPR121_STATUS) {  // 右滑后为MPR121状态项目
+          OLED_Clr(0, 2, OLED_WIDTH, 5);
+        }
+        fresh_type = OLED_UI_MENU_REFRESH;
+        goto menu_fresh_start;
       }
       break;
   }
@@ -622,7 +679,7 @@ void OLED_UI_smooth_select(void)
     }
     if (dir) oled_smooth_y_cnt++;
     else oled_smooth_y_cnt--;
-    OLED_UI_add_default_delay_task(OLED_UI_FLAG_SMOOTH_SELECT, 10);
+    OLED_UI_add_default_delay_task(OLED_UI_FLAG_SMOOTH_SELECT, 5);
   }
 #endif
 }
@@ -656,7 +713,7 @@ void OLED_UI_draw_thread_callback(void)
 #ifdef OLED_0_66
   extern const unsigned char BatteryBMP[][46];
 #endif
-  uint8_t i;
+  uint8_t i, j;
   /* normal task */
   switch (oled_ui_task.oled_ui_draw[oled_ui_task.head].flag)
   {
@@ -665,7 +722,8 @@ void OLED_UI_draw_thread_callback(void)
     case OLED_UI_FLAG_CANCEL_OK:
       break;
     case OLED_UI_FLAG_CLEAR_PAGE:
-      OLED_Clr(0, oled_ui_delay_task.oled_ui_draw[i].pos_len.x, OLED_WIDTH, oled_ui_delay_task.oled_ui_draw[i].pos_len.y);
+      OLED_Clr(0, oled_ui_task.oled_ui_draw[oled_ui_task.head].pos_len.x,
+               OLED_WIDTH, oled_ui_task.oled_ui_draw[oled_ui_task.head].pos_len.y);
       break;
     case OLED_UI_FLAG_SHOW_STRING:
       OLED_ShowString(oled_ui_task.oled_ui_draw[oled_ui_task.head].pos_len.x,
@@ -675,8 +733,30 @@ void OLED_UI_draw_thread_callback(void)
     case OLED_UI_FLAG_SHOW_INFO:
       OLED_PRINT("%s", oled_ui_task.oled_ui_draw[oled_ui_task.head].pstr);
       break;
+    case OLED_UI_FLAG_SHOW_ICONIFO:
+#ifdef OLED_0_66
+      j = OLED_Midx(strlen(oled_ui_task.oled_ui_draw[oled_ui_task.head].pstr), 0, OLED_WIDTH);
+      // Draw page1
+      OLED_Set_Pos(j - 5, 2);
+      for (i = 0; i < OLED_UI_ICON_WIDTH; i++) OLED_WR_Byte((uint8_t)(oled_ui_task.oled_ui_draw[oled_ui_task.head].addr[i] << (12 - OLED_UI_ICON_PIXEL_HEIGHT / 2)), OLED_DATA);
+      // Draw page2
+      OLED_Set_Pos(j - 5, 3);
+      for (i = 0; i < OLED_UI_ICON_WIDTH; i++) {
+        OLED_WR_Byte((uint8_t)(oled_ui_task.oled_ui_draw[oled_ui_task.head].addr[i] >> (OLED_UI_ICON_PIXEL_HEIGHT / 2 - 4)) |
+                     (uint8_t)(oled_ui_task.oled_ui_draw[oled_ui_task.head].addr[i+OLED_UI_ICON_WIDTH] << (12 - OLED_UI_ICON_PIXEL_HEIGHT / 2)),
+                     OLED_DATA);
+      }
+      // Draw page3
+      OLED_Set_Pos(j - 5, 4);
+      for (i = 0; i < OLED_UI_ICON_WIDTH; i++) OLED_WR_Byte((uint8_t)(oled_ui_task.oled_ui_draw[oled_ui_task.head].addr[i+OLED_UI_ICON_WIDTH] >> (OLED_UI_ICON_PIXEL_HEIGHT / 2 - 4)), OLED_DATA);
+      // Draw info string
+      OLED_ShowString(j + 5, 3, oled_ui_task.oled_ui_draw[oled_ui_task.head].pstr);
+#endif
+      break;
     case OLED_UI_FLAG_CANCEL_INFO:
-      OLED_PRINT("");
+#ifdef OLED_0_66
+      OLED_Clr(0, 2, OLED_WIDTH, 5);
+#endif
       break;
     case OLED_UI_FLAG_DRAW_SLOT:
       OLED_UI_slot_draw();
@@ -731,7 +811,8 @@ void OLED_UI_draw_thread_callback(void)
       case OLED_UI_FLAG_CANCEL_OK:
         break;
       case OLED_UI_FLAG_CLEAR_PAGE:
-        OLED_Clr(0, oled_ui_delay_task.oled_ui_draw[i].pos_len.x, OLED_WIDTH, oled_ui_delay_task.oled_ui_draw[i].pos_len.y);
+        OLED_Clr(0, oled_ui_delay_task.oled_ui_draw[i].pos_len.x,
+                 OLED_WIDTH, oled_ui_delay_task.oled_ui_draw[i].pos_len.y);
         break;
       case OLED_UI_FLAG_SHOW_STRING:
         OLED_ShowString(oled_ui_delay_task.oled_ui_draw[i].pos_len.x,
@@ -742,7 +823,9 @@ void OLED_UI_draw_thread_callback(void)
         OLED_PRINT("%s", oled_ui_delay_task.oled_ui_draw[i].pstr);
         break;
       case OLED_UI_FLAG_CANCEL_INFO:
-        OLED_PRINT("");
+#ifdef OLED_0_66
+        OLED_Clr(0, 2, OLED_WIDTH, 5);
+#endif
         break;
       case OLED_UI_FLAG_DRAW_SLOT:
         OLED_UI_slot_draw();
@@ -766,6 +849,9 @@ void OLED_UI_draw_thread_callback(void)
         break;
       case OLED_UI_FLAG_SMOOTH_SELECT:
         OLED_UI_smooth_select();
+        break;
+      case OELD_UI_FLAG_REFRESH_MENU:
+        OLED_UI_draw_menu(OLED_UI_MENU_REFRESH);
         break;
       default:
         continue;

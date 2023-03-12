@@ -11,7 +11,7 @@
 #include "HAL.h"
 
 /* pinmux */
-const uint8_t MPR121_Cap_Mouse_Pinmux[4] = {1, 2, 3, 0};  // up-ELE6, down-ELE4, left-ELE3, right-ELE5
+const uint8_t MPR121_Cap_Mouse_Pinmux[4] = {1, 2, 3, 0};  // up-ELE1, down-ELE2, left-ELE3, right-ELE0
 const uint8_t MPR121_TouchBar_Pinmux[7] = {10, 9, 8, 7, 6, 5, 4}; // L1, L2, L3, M, R1, R2, R3
 
 /**************use py to generate***************

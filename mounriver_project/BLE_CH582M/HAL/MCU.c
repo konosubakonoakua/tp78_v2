@@ -87,7 +87,7 @@ __attribute__((weak)) void HID_KEYBOARD_Process(void)
         } else if (KeyboardDat->Key1 == KEY_S) {
           TP78_Idle_Clr();
           OLED_UI_draw_menu(OLED_UI_SWIPE_DOWN);
-        } else {
+        } else if (KeyboardDat->Key1 != KEY_None) {
           OLED_UI_draw_menu(OLED_UI_MENU_REFRESH);
         }
       }
@@ -808,7 +808,7 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
     if (collect_cnt == 0) {
       MPR121_ALG_Judge_Cap_Mouse();
     } else {
-      MPR121_ReadHalfWord(MPR121_REG_STS0, &dat16)
+      MPR121_ReadHalfWord(MPR121_REG_STS0, &dat16);
       MPR121_ALG_Update_algListNode(mpr121_sts_head, 0, dat16);   // update mpr121 status
       for (i = 0; i < 4; i++) {
         MPR121_ReadHalfWord(MPR121_REG_EFD0LB+2*MPR121_Cap_Mouse_Pinmux[i], &dat16);
@@ -988,7 +988,9 @@ void HAL_Init()
 //  OLED_UI_draw_menu(OLED_UI_MENU_REFRESH);
 //  OLED_UI_draw_menu(OLED_UI_SWIPE_DOWN);
 //  tmos_start_task( halTaskID, HAL_TEST_EVENT, 1600 );    // 添加测试任务
+#ifndef FIRST_USED
   WWDG_ResetCfg(ENABLE);  // 看门狗使能(溢出复位)
+#endif
 }
 
 /*******************************************************************************

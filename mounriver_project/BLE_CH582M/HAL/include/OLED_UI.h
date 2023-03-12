@@ -22,7 +22,8 @@
   #define OLED_UI_HIS_LEN           3                     // 保存OLED打印历史条数
   #define OLED_UI_HIS_DLEN          OLED_UI_STR_LEN_MAX   // 每条OLED打印历史长度
 
-  #define OLED_UI_ICON_WIDTH        10
+  #define OLED_UI_ICON_WIDTH        10    // uints: pixel
+  #define OLED_UI_ICON_PIXEL_HEIGHT 12    // uints: pixel
   #define OLED_UI_ICON_HEIGHT       2     // units: page
 
   #define OLED_FRESH_RATE           30    // uints: 1Hz
@@ -34,12 +35,14 @@
     OLED_UI_FLAG_CLEAR_PAGE,
     OLED_UI_FLAG_SHOW_STRING,
     OLED_UI_FLAG_SHOW_INFO,
+    OLED_UI_FLAG_SHOW_ICONIFO,
     OLED_UI_FLAG_CANCEL_INFO,
     OLED_UI_FLAG_DRAW_BMP,
     OLED_UI_FLAG_DRAW_SLOT,
     OLED_UI_FLAG_IDLE_DRAW,
     OLED_UI_FLAG_CTL_STOP_SCOLL,
     OLED_UI_FLAG_SMOOTH_SELECT,
+    OELD_UI_FLAG_REFRESH_MENU,
     /* only for normal task */
     OLED_UI_FLAG_BAT_CHARGE,
     OLED_UI_FLAG_BAT_CLR_CHARGE,
@@ -61,6 +64,8 @@
     OLED_UI_ICON_BLE2_IDX,
     OLED_UI_ICON_BLE3_IDX,
     OLED_UI_ICON_BLE4_IDX,
+    OLED_UI_ICON_TP_IDX,
+    OLED_UI_ICON_LED_STYLE_IDX,
   }oled_ui_icon_index;
 
   typedef enum {
@@ -74,6 +79,7 @@
   typedef enum {
     OLED_UI_TYPE_MENU = 0,
     OLED_UI_TYPE_ENTER_NUM,
+    OLED_UI_TYPE_MPR121_STATUS,
   }oled_ui_menu_type;
 
   typedef struct {
@@ -129,8 +135,16 @@
     uint8_t limit_len;
   }oled_ui_enter_num_structure;
 
+  typedef struct _oled_ui_mpr121_status_structure{
+    oled_ui_menu_type type; // 菜单指针类型
+    uint8_t* p;  // 返回的菜单指向
+    uint8_t reg;  // 寄存器地址
+    BOOL is_half_word;  // 为TRUE读取16bit, 否则8bit
+  }oled_ui_mpr121_status_structure;
+
   #define P_MENU_T(x)         ((const oled_ui_menu_structure*)x)
   #define P_EN_T(x)           ((const oled_ui_enter_num_structure*)x)
+  #define P_MPR_STS_T(x)      ((const oled_ui_mpr121_status_structure*)x)
 
   extern uint8_t oled_fresh_rate;
 
@@ -138,7 +152,13 @@
   extern const oled_ui_menu_structure cfg_menu_1;
   extern const oled_ui_menu_structure cfg_menu_2;
   extern const oled_ui_menu_structure cfg_menu_3;
+  extern const oled_ui_menu_structure mpr_status_menu_1;
+  extern const oled_ui_menu_structure mpr_status_menu_2;
   extern const oled_ui_menu_structure main_menu;
+  extern const oled_ui_mpr121_status_structure mpr_status_mousecap_U;
+  extern const oled_ui_mpr121_status_structure mpr_status_mousecap_D;
+  extern const oled_ui_mpr121_status_structure mpr_status_mousecap_L;
+  extern const oled_ui_mpr121_status_structure mpr_status_mousecap_R;
   extern const oled_ui_enter_num_structure bledevice_en;
   extern const oled_ui_enter_num_structure ledstyle_en;
   extern const oled_ui_enter_num_structure rfenable_en;
@@ -154,6 +174,7 @@
   uint8_t OLED_UI_add_CLEARPAGE_task(uint8_t y0, uint8_t y1);
   uint8_t OLED_UI_add_SHOWSTRING_task(uint8_t x, uint8_t y, char *pstr, ...);
   uint8_t OLED_UI_add_SHOWINFO_task(char *pstr, ...);
+  uint8_t OLED_UI_add_SHOW_ICONINFO_task(uint8_t icon_idx, char *pstr, ...);
   uint8_t OLED_UI_add_default_task(oled_ui_data_flag flag);
   uint8_t OLED_UI_add_delay_task(oled_ui_data_flag flag, oled_ui_pos_len pos_len, uint8_t* addr, uint8_t* pstr, uint32_t count);
   uint8_t OLED_UI_add_default_delay_task(oled_ui_data_flag flag, uint32_t count);

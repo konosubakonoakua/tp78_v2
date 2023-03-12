@@ -52,7 +52,7 @@
   #define I2C_DELAY { OLED_SW_I2C_Delay(); }
 
   #if (defined HAL_HW_I2C) && (HAL_HW_I2C == TRUE)
-    #define OLED_WR_Byte(dat, cmd)  HW_I2C_WR_Reg(cmd ? 0x40 : 0, dat, OLED_ADDR)
+    #define OLED_WR_Byte(dat, cmd)  HW_I2C_WR_Reg((cmd) ? 0x40 : 0, (dat), OLED_ADDR)
   #else
     #define OLED_WR_Byte(dat, cmd)  OLED_SW_I2C_WR_Byte(dat, cmd)
   #endif
