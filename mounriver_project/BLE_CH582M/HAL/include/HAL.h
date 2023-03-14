@@ -136,8 +136,8 @@ typedef struct _Touchbar_Data_t{
 #define DATAFLASH_ADDR_MPR121_ALG_Param     (10*1024+12)  // MPR121算法参数存储
 #endif
 
-#define IDLE_MAX_PERIOD                     200           // idle_cnt大于该值则进入屏保，单位为100ms
-#define LP_MAX_PERIOD                       400           // idle_cnt大于该值则进入低功耗模式，单位为100ms
+#define IDLE_MAX_PERIOD                     1200          // idle_cnt大于该值则进入屏保，单位为100ms
+#define LP_MAX_PERIOD                       2400          // idle_cnt大于该值则进入低功耗模式，单位为100ms
 
 #define MOTOR_PIN                           GPIO_Pin_19
 #define MOTOR_RUN()                         { GPIOB_SetBits( MOTOR_PIN ); }

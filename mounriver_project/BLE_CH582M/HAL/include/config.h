@@ -92,7 +92,7 @@
 #define HAL_USB                     TRUE          // USB
 #endif
 #ifndef HAL_PS2
-#define HAL_PS2                     TRUE         // PS/2小红点
+#define HAL_PS2                     FALSE         // PS/2小红点
 #endif
 #ifndef HAL_KEYBOARD
 #define HAL_KEYBOARD                TRUE          // 键盘
@@ -119,7 +119,7 @@
 #define SW_PAINTEDEGG               TRUE          // 彩蛋
 #endif
 #ifndef HAL_I2C_TP
-#define HAL_I2C_TP                  FALSE         // I2C小红点
+#define HAL_I2C_TP                  TRUE         // I2C小红点
 #endif
 #ifndef HAL_MPR121_CAPMOUSE
 #define HAL_MPR121_CAPMOUSE         FALSE          // MPR121触摸板

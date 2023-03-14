@@ -55,18 +55,46 @@ const oled_ui_menu_structure mpr_status_menu_1 = {
   .p[1] = (uint8_t*)&mpr_status_mousecap_D,
   .p[2] = (uint8_t*)&mpr_status_mousecap_L,
   .p[3] = (uint8_t*)&main_menu,
-  .p[4] = (uint8_t*)&mpr_status_menu_2,
+  .p[4] = (uint8_t*)&mpr_status_menu_4,
   .p[5] = (uint8_t*)&mpr_status_menu_2,
   .menu_size = 3,
 };
 const oled_ui_menu_structure mpr_status_menu_2 = {
   .type = OLED_UI_TYPE_MENU,
   .text[0] = "capmouseR",
+  .text[1] = "touchbar1",
+  .text[2] = "touchbar2",
   .p[0] = (uint8_t*)&mpr_status_mousecap_R,
+  .p[1] = (uint8_t*)&mpr_status_touchbar_1,
+  .p[2] = (uint8_t*)&mpr_status_touchbar_2,
   .p[3] = (uint8_t*)&main_menu,
   .p[4] = (uint8_t*)&mpr_status_menu_1,
+  .p[5] = (uint8_t*)&mpr_status_menu_3,
+  .menu_size = 3,
+};
+const oled_ui_menu_structure mpr_status_menu_3 = {
+  .type = OLED_UI_TYPE_MENU,
+  .text[0] = "touchbar3",
+  .text[1] = "touchbar4",
+  .text[2] = "touchbar5",
+  .p[0] = (uint8_t*)&mpr_status_touchbar_3,
+  .p[1] = (uint8_t*)&mpr_status_touchbar_4,
+  .p[2] = (uint8_t*)&mpr_status_touchbar_5,
+  .p[3] = (uint8_t*)&main_menu,
+  .p[4] = (uint8_t*)&mpr_status_menu_2,
+  .p[5] = (uint8_t*)&mpr_status_menu_4,
+  .menu_size = 3,
+};
+const oled_ui_menu_structure mpr_status_menu_4 = {
+  .type = OLED_UI_TYPE_MENU,
+  .text[0] = "touchbar6",
+  .text[1] = "touchbar7",
+  .p[0] = (uint8_t*)&mpr_status_touchbar_6,
+  .p[1] = (uint8_t*)&mpr_status_touchbar_7,
+  .p[3] = (uint8_t*)&main_menu,
+  .p[4] = (uint8_t*)&mpr_status_menu_3,
   .p[5] = (uint8_t*)&mpr_status_menu_1,
-  .menu_size = 1,
+  .menu_size = 2,
 };
 const oled_ui_menu_structure main_menu = {
   .type = OLED_UI_TYPE_MENU,
@@ -100,6 +128,48 @@ const oled_ui_mpr121_status_structure mpr_status_mousecap_R = {
   .type = OLED_UI_TYPE_MPR121_STATUS,
   .p = (uint8_t*)&mpr_status_menu_2,
   .reg = MPR121_REG_EFD0LB,   // 根据MPR121_Cap_Mouse_Pinmux修改
+  .is_half_word = TRUE,
+};
+const oled_ui_mpr121_status_structure mpr_status_touchbar_1 = {
+  .type = OLED_UI_TYPE_MPR121_STATUS,
+  .p = (uint8_t*)&mpr_status_menu_2,
+  .reg = MPR121_REG_EFD10LB,  // 根据MPR121_TouchBar_Pinmux修改
+  .is_half_word = TRUE,
+};
+const oled_ui_mpr121_status_structure mpr_status_touchbar_2 = {
+  .type = OLED_UI_TYPE_MPR121_STATUS,
+  .p = (uint8_t*)&mpr_status_menu_2,
+  .reg = MPR121_REG_EFD9LB,   // 根据MPR121_TouchBar_Pinmux修改
+  .is_half_word = TRUE,
+};
+const oled_ui_mpr121_status_structure mpr_status_touchbar_3 = {
+  .type = OLED_UI_TYPE_MPR121_STATUS,
+  .p = (uint8_t*)&mpr_status_menu_3,
+  .reg = MPR121_REG_EFD8LB,   // 根据MPR121_TouchBar_Pinmux修改
+  .is_half_word = TRUE,
+};
+const oled_ui_mpr121_status_structure mpr_status_touchbar_4 = {
+  .type = OLED_UI_TYPE_MPR121_STATUS,
+  .p = (uint8_t*)&mpr_status_menu_3,
+  .reg = MPR121_REG_EFD7LB,   // 根据MPR121_TouchBar_Pinmux修改
+  .is_half_word = TRUE,
+};
+const oled_ui_mpr121_status_structure mpr_status_touchbar_5 = {
+  .type = OLED_UI_TYPE_MPR121_STATUS,
+  .p = (uint8_t*)&mpr_status_menu_3,
+  .reg = MPR121_REG_EFD6LB,  // 根据MPR121_TouchBar_Pinmux修改
+  .is_half_word = TRUE,
+};
+const oled_ui_mpr121_status_structure mpr_status_touchbar_6 = {
+  .type = OLED_UI_TYPE_MPR121_STATUS,
+  .p = (uint8_t*)&mpr_status_menu_4,
+  .reg = MPR121_REG_EFD5LB,   // 根据MPR121_TouchBar_Pinmux修改
+  .is_half_word = TRUE,
+};
+const oled_ui_mpr121_status_structure mpr_status_touchbar_7 = {
+  .type = OLED_UI_TYPE_MPR121_STATUS,
+  .p = (uint8_t*)&mpr_status_menu_4,
+  .reg = MPR121_REG_EFD4LB,   // 根据MPR121_TouchBar_Pinmux修改
   .is_half_word = TRUE,
 };
 

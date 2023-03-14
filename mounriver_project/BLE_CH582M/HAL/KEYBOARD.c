@@ -228,19 +228,19 @@ UINT8 KEYBOARD_Custom_Function( void )
     } else if ( KeyboardDat->Key1 == KEY_4 && Fn_Mode != Fn_Mode_SelectDevice4 ) { // 切换至设备4
       Fn_Mode = Fn_Mode_SelectDevice4;
       Fn_cnt = 0;
-    } else if ( KeyboardDat->Key1 == KEY_F1 && Fn_Mode != Fn_Mode_LED_Style1 ) { // 呼吸灯模式1
+    } else if ( KeyboardDat->Key1 == KEY_F1 && Fn_Mode != Fn_Mode_LED_Style1 ) { // 背光模式1
       Fn_Mode = Fn_Mode_LED_Style1;
       Fn_cnt = 0;
-    } else if ( KeyboardDat->Key1 == KEY_F2 && Fn_Mode != Fn_Mode_LED_Style2 ) { // 呼吸灯模式2
+    } else if ( KeyboardDat->Key1 == KEY_F2 && Fn_Mode != Fn_Mode_LED_Style2 ) { // 背光模式2
       Fn_Mode = Fn_Mode_LED_Style2;
       Fn_cnt = 0;
-    } else if ( KeyboardDat->Key1 == KEY_F3 && Fn_Mode != Fn_Mode_LED_Style3 ) { // 呼吸灯模式3
+    } else if ( KeyboardDat->Key1 == KEY_F3 && Fn_Mode != Fn_Mode_LED_Style3 ) { // 背光模式3
       Fn_Mode = Fn_Mode_LED_Style3;
       Fn_cnt = 0;
-    } else if ( KeyboardDat->Key1 == KEY_F4 && Fn_Mode != Fn_Mode_LED_Style4 ) { // 呼吸灯模式4
+    } else if ( KeyboardDat->Key1 == KEY_F4 && Fn_Mode != Fn_Mode_LED_Style4 ) { // 背光模式4
       Fn_Mode = Fn_Mode_LED_Style4;
       Fn_cnt = 0;
-    } else if ( KeyboardDat->Key1 == KEY_F5 && Fn_Mode != Fn_Mode_LED_Style5 ) { // 呼吸灯模式5
+    } else if ( KeyboardDat->Key1 == KEY_F5 && Fn_Mode != Fn_Mode_LED_Style5 ) { // 背光模式5
       Fn_Mode = Fn_Mode_LED_Style5;
       Fn_cnt = 0;
     } else {  // 不识别的指令

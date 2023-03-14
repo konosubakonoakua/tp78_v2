@@ -118,7 +118,7 @@
   #define CAP_MOUSE_MOVE_SPEED  8     // cap_mouse move speed (default 8)
   #define TOUCHBAR_TOU_THRESH   3     // touchbar touch threshold (default 3)
   #define TOUCHBAR_REL_THRESH   2     // touchbar release threshold (default 2)
-  #define DOUBLE_TOUCH_CNT      40    // double touch counter (default 40)
+  #define DOUBLE_TOUCH_CNT      20    // double touch counter (default 20)
   #define LONG_TOUCH_CNT        100   // long touch counter (default 100)
 
   #define FILTER_CNT            2     // filter cnt which is less than this value
@@ -179,8 +179,8 @@
     DIRECT_RIGHT,
     DIRECT_LEFT2,
     DIRECT_RIGHT2,
-    DIRECT_LEFT3,
-    DIRECT_RIGHT3,
+//    DIRECT_LEFT3,
+//    DIRECT_RIGHT3,
     DIRECT_JUDGE_LEFT,
     DIRECT_JUDGE_RIGHT,
   }alg_TouchbarDirectiion;

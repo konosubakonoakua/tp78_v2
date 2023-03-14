@@ -422,6 +422,8 @@ void MPR121_ALG_Judge_Touchbar(void)
       if (dir == DIRECT_JUDGE_RIGHT) {  // judge to swipe right
         dir = DIRECT_OTHER;
         TouchbarDat.swip_right = TRUE;
+        OLED_UI_add_SHOWINFO_task("R Swipe");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
         goto touchbar_judge_end;
       }
     }
@@ -432,6 +434,8 @@ void MPR121_ALG_Judge_Touchbar(void)
       if (dir == DIRECT_JUDGE_LEFT) { // judge to swipe left
         dir = DIRECT_OTHER;
         TouchbarDat.swip_left = TRUE;
+        OLED_UI_add_SHOWINFO_task("L Swipe");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
         goto touchbar_judge_end;
       }
     }
@@ -440,7 +444,7 @@ void MPR121_ALG_Judge_Touchbar(void)
   if (__BOOL__(now_dat & 0x3) != __BOOL__(pre_dat & 0x3)) { // LBtn0 => LBtn1 or LBtn1 => LBtn0
     if (__iBOOL__(now_dat & 0x3)) { // LBtn1 => LBtn0
       if (mpr_algParameter.l_cnt_dat >= FILTER_CNT) {
-        mpr_algParameter.dbtn_dat = now_dat; // next touch is double touch
+        mpr_algParameter.dbtn_dat = pre_dat; // next touch is double touch
       }
       m_data->LeftBtn = 0;  // release mouse left btn
     }
@@ -455,6 +459,8 @@ void MPR121_ALG_Judge_Touchbar(void)
       if (mpr_algParameter.dbtn_dat != 0) {
         mpr_algParameter.dbtn_dat = 0;
         m_data->LeftBtn = 1;  // press mouse left btn
+        OLED_UI_add_SHOWINFO_task("L Btn");
+        OLED_UI_add_CANCELINFO_delay_task(2000);
         MOTOR_GO();
         goto touchbar_judge_end;
       }
@@ -470,6 +476,8 @@ void MPR121_ALG_Judge_Touchbar(void)
     mpr_algParameter.r_cnt_dat = __LIMIT__(mpr_algParameter.r_cnt_dat+1, 65534);
     if (mpr_algParameter.r_cnt_dat == mpr_algParameter.long_touch_cnt) {
       m_data->RightBtn = 1; // press mouse right btn
+      OLED_UI_add_SHOWINFO_task("R Btn");
+      OLED_UI_add_CANCELINFO_delay_task(2000);
       MOTOR_GO();
       goto touchbar_judge_end;
     }

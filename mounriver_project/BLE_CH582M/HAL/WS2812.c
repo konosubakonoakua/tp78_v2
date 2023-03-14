@@ -10,7 +10,7 @@
 
 #include "HAL.h"
 
-__attribute__((aligned(4))) UINT32 LED_DMA_Buffer[LED_NUMBER*24 + RESET_FRAME_SIZE] = { TIMING_RESET };  // LED的PWM脉冲翻转计数值缓冲区，RESET时间为42*1.25us
+__attribute__((aligned(4))) UINT32 LED_DMA_Buffer[LED_NUMBER*24 + RESET_FRAME_SIZE] = { TIMING_RESET };  // LED的PWM脉冲翻转计数值缓冲区
 UINT8 LED_BYTE_Buffer[LED_NUMBER][3] = { 0 };
 WS2812_Style_Func led_style_func = WS2812_Style_Off;  // 默认背光函数
 static uint8_t style_dir = 0;
@@ -79,8 +79,10 @@ void WS2812_PWM_Init( void )
   WS2812_GPIO_(ModeCfg)( WS2812_Pin, GPIO_ModeOut_PP_5mA );
   WS2812_GPIO_(ResetBits)( WS2812_Pin );
 
+#if 0 // DMA搬运前重新初始化
   TMR1_PWMInit( High_Level, PWM_Times_1 );
   TMR1_PWMCycleCfg( 75 );        // 周期 1.25us
+#endif
 
   WS2812_Style_Off( );
 

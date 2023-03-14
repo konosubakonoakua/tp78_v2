@@ -156,6 +156,8 @@ __attribute__((weak)) void HID_I2CTP_Process(void)
     g_Ready_Status.i2ctp_data = FALSE;
     TP78_Idle_Clr();
     if (I2C_TP_ReadPacket() == 0) { // 正常接受完数据包
+      HIDMouse[1] = -HIDMouse[1]; // 反转X轴
+      HIDMouse[2] = -HIDMouse[2]; // 反转Y轴
       if ( g_Ready_Status.usb == TRUE && priority_USB == TRUE ) {
         tmos_set_event( usbTaskID, USB_MOUSE_EVENT );  //USB鼠标事件
       } else if ( g_Ready_Status.ble == TRUE ) {
@@ -918,6 +920,10 @@ void HAL_Init()
 #if (defined HAL_KEY) && (HAL_KEY == TRUE)
   HAL_KeyInit( );
 #endif
+#if (defined HAL_WS2812_PWM) && (HAL_WS2812_PWM == TRUE)
+  DATAFLASH_Read_LEDStyle( );
+  WS2812_PWM_Init( );
+#endif
 #if (defined HAL_HW_I2C) && (HAL_HW_I2C == TRUE)
   HW_I2C_Init( );
 #endif
@@ -935,10 +941,6 @@ void HAL_Init()
 #endif
 #if (defined HAL_KEYBOARD) && (HAL_KEYBOARD == TRUE)
   KEYBOARD_Init( );
-#endif
-#if (defined HAL_WS2812_PWM) && (HAL_WS2812_PWM == TRUE)
-  WS2812_PWM_Init( );
-  DATAFLASH_Read_LEDStyle( );
 #endif
 #if (defined HAL_MOTOR) && (HAL_MOTOR == TRUE)
   MOTOR_Init( );
