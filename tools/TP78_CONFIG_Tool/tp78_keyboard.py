@@ -55,6 +55,8 @@ class Keyboard(pygame.sprite.Sprite):
         self.output_text_color = WHITE
         self.switch_mode_color = WHITE
         self.log_color = WHITE
+        self.hid_arr = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.hid_arr_idx = 2
         self.log_text = ""
         self.userdefkey = 0
         self.mode = 0
@@ -78,7 +80,7 @@ class Keyboard(pygame.sprite.Sprite):
             screen.blit(text, text.get_rect(topleft = KEY_SWITCH_MODE_POS))
         if kbm_detection.keycode_update == True:
             kbm_detection.keycode_update = False
-            if self.mode == 0:  # 模式0
+            if self.mode == 0:  # 模式0 - 改键配置
                 if self.input_text_color == WHITE:   # 选择按键
                     keyboard_matrix[self.now_key_x][self.now_key_y] = kbm_detection.keycode
                 else:   # 自定义改键
@@ -96,11 +98,22 @@ class Keyboard(pygame.sprite.Sprite):
                         self.userdefkey = 0
                     elif self.userdefkey > 255:
                         self.userdefkey = 255
-            else:   # 模式1
+            else:   # 模式1 - 键盘测试
                 for x in range(keyboard_row_size):
                     for y in range(keyboard_col_size):
                         if keyboard_matrix[x][y] == kbm_detection.keycode:
-                            self.color[x][y] = RED
+                            if self.color[x][y] == WHITE:
+                                self.color[x][y] = RED
+                                if keyboard_matrix[x][y] >= 224 and keyboard_matrix[x][y] <= 231:   # 功能键
+                                    self.hid_arr[0] |= (1 << (keyboard_matrix[x][y] - 224))
+                                elif keyboard_matrix[x][y] < 224:
+                                    if self.hid_arr_idx < 8:
+                                        self.hid_arr[self.hid_arr_idx] = keyboard_matrix[x][y]
+                                        self.hid_arr_idx += 1
+                            self.show_log("HID Array: %d %d %d %d %d %d %d %d"%(self.hid_arr[0], self.hid_arr[1],
+                                                                                self.hid_arr[2], self.hid_arr[3],
+                                                                                self.hid_arr[4], self.hid_arr[5],
+                                                                                self.hid_arr[6], self.hid_arr[7]))
         for x in range(keyboard_row_size):
             for y in range(keyboard_col_size):
                 text = self.key_front.render(keyboard_page[int(keyboard_matrix[x][y])], True, self.color[x][y])
@@ -167,6 +180,19 @@ class Keyboard(pygame.sprite.Sprite):
                         self.color[self.now_key_x][self.now_key_y] = WHITE
                     else:
                         self.color[x][y] = WHITE
+                        if keyboard_matrix[x][y] >= 224 and keyboard_matrix[x][y] <= 231:   # 功能键
+                            self.hid_arr[0] &= ~(1 << (keyboard_matrix[x][y] - 224))
+                        elif keyboard_matrix[x][y] < 224:
+                            for _idx in range(2, 8):
+                                if self.hid_arr[_idx] == keyboard_matrix[x][y]:
+                                    del self.hid_arr[_idx]
+                                    self.hid_arr.extend([0])
+                                    self.hid_arr_idx -= 1
+                                    _idx -= 1
+                        self.show_log("HID Array: %d %d %d %d %d %d %d %d"%(self.hid_arr[0], self.hid_arr[1],
+                                                                            self.hid_arr[2], self.hid_arr[3],
+                                                                            self.hid_arr[4], self.hid_arr[5],
+                                                                            self.hid_arr[6], self.hid_arr[7]))
                     self.now_key_x = x
                     self.now_key_y = y
 
@@ -180,7 +206,7 @@ class Keyboard(pygame.sprite.Sprite):
         else:
             self.switch_mode_color = WHITE
     
-    def show_log(self, logtext, color, delayms = 3000):
+    def show_log(self, logtext, color = WHITE, delayms = 3000):
         self.log_color = color
         self.log_text = logtext
         pygame.time.set_timer(pygame.USEREVENT + 1, delayms)

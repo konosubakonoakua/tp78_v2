@@ -50,8 +50,8 @@ keyboard_page = (
     "Alt", "GUI", "Resv", "Resv",                           # 230~233
     "Resv", "Resv", "Resv", "Resv",                         # 234~237
     "Resv", "Resv", "Resv", "Resv",                         # 238~241
-    "Resv", "Resv", "Resv", "Resv",                         # 242~245
-    "Resv", "Resv", "Resv", "Resv",                         # 246~249
+    "Resv", "SP_1", "SP_2", "SP_3",                         # 242~245
+    "SP_4", "SP_5", "SP_6", "SP_7",                         # 246~249
     "Resv", "Resv", "Resv", "Resv",                         # 250~253
     "Resv", "Fn"                                            # 254~255
 )
@@ -83,6 +83,13 @@ keyboard_page_desc = {
     231: "右GUI - windows键",
     226: "左Alt",
     230: "右Alt",
+    243: "TP78 SP_1键，无法捕捉",
+    244: "TP78 SP_2键，无法捕捉",
+    245: "TP78 SP_3键，无法捕捉",
+    246: "TP78 SP_4键，无法捕捉",
+    247: "TP78 SP_5键，无法捕捉",
+    248: "TP78 SP_6键，无法捕捉",
+    249: "TP78 SP_7键，无法捕捉",
     255: "TP78功能键Fn，无法捕捉",
 }
 
