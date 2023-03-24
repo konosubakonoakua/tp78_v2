@@ -31,7 +31,7 @@
   #define BAT_ADC_PIN         GPIO_Pin_8    // GPIOA
   #define BAT_CHRG_PIN        GPIO_Pin_16   // GPIOB
   #define BAT_COM_PIN         GPIO_Pin_17   // GPIOB
-  #define BAT_IS_CHARGING     !(R32_PB_PIN & BAT_CHRG_PIN)
+  #define BAT_IS_CHARGING     (GPIOB_ReadPortPin(BAT_CHRG_PIN) == 0)
   #define BAT_ADC_ENA()       GPIOB_SetBits(BAT_COM_PIN)
   #define BAT_ADC_DIS()       GPIOB_ResetBits(BAT_COM_PIN)
 
@@ -43,7 +43,6 @@
 
   extern UINT16 BAT_abcBuff[ADC_MAXBUFLEN];
   extern UINT32 BAT_adcVal;
-  extern BOOL BAT_chrg;
   extern UINT32 BAT_adcHistory;
 
 #endif

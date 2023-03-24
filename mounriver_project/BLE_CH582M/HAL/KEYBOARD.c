@@ -256,9 +256,13 @@ UINT8 KEYBOARD_Custom_Function( void )
         if ( Fn_cnt == 0x50 ) {
           Fn_cnt = 0;
           Fn_Mode = Fn_Mode_None;
+#if (defined HAL_WDG) && (HAL_WDG == TRUE)
           WWDG_ResetCfg(DISABLE); // 关看门狗
+#endif
           KEYBOARD_Reset( );
+#if (defined HAL_WDG) && (HAL_WDG == TRUE)
           WWDG_ResetCfg(ENABLE);  // 开看门狗
+#endif
           OLED_UI_add_SHOWINFO_task("Reset OK!");
           OLED_UI_add_CANCELINFO_delay_task(3000);
         } else if ( Fn_cnt >= 0x30 ) {

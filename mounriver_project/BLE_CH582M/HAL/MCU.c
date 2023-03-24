@@ -430,14 +430,13 @@ __attribute__((weak)) void HW_Battery_Process(void)
   BAT_ADC_DIS();
   BATTERY_ADC_Calculation( );
 #if (defined HAL_OLED)  && (HAL_OLED == TRUE)
-  if ( EnterPasskey_flag == FALSE ) { // 绘制电池
-    BATTERY_DrawBMP( );
+#ifdef OLED_0_91
+  if ( EnterPasskey_flag == FALSE ) {
+#endif
+    BATTERY_DrawBMP( ); // 绘制电池
+#ifdef OLED_0_91
   }
-  if ( BAT_chrg != BAT_IS_CHARGING ) {  // 判断充电信号
-    BAT_chrg = BAT_IS_CHARGING;
-    if ( BAT_chrg ) OLED_UI_add_default_task(OLED_UI_FLAG_BAT_CHARGE);
-    else OLED_UI_add_default_task(OLED_UI_FLAG_BAT_CLR_CHARGE);
-  }
+#endif
 #endif
   BAT_ADC_ENA();
   BATTERY_DMA_ENABLE( );  // DMA使能
@@ -701,7 +700,7 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
 #if (defined HAL_BATTADC) && (HAL_BATTADC == TRUE)
     HW_Battery_Process();
 #endif
-    tmos_start_task( halTaskID, BATTERY_EVENT, MS1_TO_SYSTEM_TIME(5000) );  // 5s更新采样值
+    tmos_start_task( halTaskID, BATTERY_EVENT, MS1_TO_SYSTEM_TIME(3000) );  // 3s更新采样值
     return events ^ BATTERY_EVENT;
   }
 
@@ -783,8 +782,10 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
       else g_lp_type = sleep_mode;
       GotoLowpower(g_lp_type);
     }
+#if (defined HAL_WDG) && (HAL_WDG == TRUE)
     WWDG_SetCounter(0);
-    tmos_start_task( halTaskID, FEEDDOG_EVENT, MS1_TO_SYSTEM_TIME(100) ); // 100ms周期
+#endif
+    tmos_start_task( halTaskID, FEEDDOG_EVENT, MS1_TO_SYSTEM_TIME(50) ); // 50ms周期
     return events ^ FEEDDOG_EVENT;
   }
 
@@ -808,7 +809,7 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
 #endif
 #if (defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE)
     if (collect_cnt == 0) {
-      MPR121_ALG_Judge_Cap_Mouse();
+      if ( g_keyboard_status.enter_cfg == FALSE ) MPR121_ALG_Judge_Cap_Mouse();  // 配置参数模式不进行capmouse判断
     } else {
       MPR121_ReadHalfWord(MPR121_REG_STS0, &dat16);
       MPR121_ALG_Update_algListNode(mpr121_sts_head, 0, dat16);   // update mpr121 status
@@ -820,7 +821,7 @@ tmosEvents HAL_ProcessEvent( tmosTaskID task_id, tmosEvents events )
 #endif
 #if (defined HAL_MPR121_TOUCHBAR) && (HAL_MPR121_TOUCHBAR == TRUE)
     if (collect_cnt == 0) {
-      MPR121_ALG_Judge_Touchbar();
+      if ( g_keyboard_status.enter_cfg == FALSE ) MPR121_ALG_Judge_Touchbar();  // 配置参数模式不进行touchbar判断
     } else {
 #if !(defined HAL_MPR121_CAPMOUSE) || (HAL_MPR121_CAPMOUSE == FALSE)
       MPR121_ReadHalfWord(MPR121_REG_STS0, &dat16);
@@ -991,7 +992,9 @@ void HAL_Init()
 //  OLED_UI_draw_menu(OLED_UI_SWIPE_DOWN);
 //  tmos_start_task( halTaskID, HAL_TEST_EVENT, 1600 );    // 添加测试任务
 #ifndef FIRST_USED
+#if (defined HAL_WDG) && (HAL_WDG == TRUE)
   WWDG_ResetCfg(ENABLE);  // 看门狗使能(溢出复位)
+#endif
 #endif
 }
 

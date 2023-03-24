@@ -12,7 +12,6 @@
 
 __attribute__((aligned(2))) UINT16 BAT_abcBuff[ADC_MAXBUFLEN];
 UINT32 BAT_adcVal = 0;
-BOOL BAT_chrg = FALSE;
 UINT32 BAT_adcHistory = 0;
 static signed short RoughCalib_Value = 0;
 
@@ -130,6 +129,9 @@ void BATTERY_DrawBMP( void )
   if (BATTERY_ADC_GetLevel(BAT_adcHistory) != BAT_level) { // 电量等级变化
     OLED_UI_add_default_task(OLED_UI_FLAG_BAT_LEVEL_1 + BAT_level);
   }
+  if ( BAT_IS_CHARGING ) OLED_UI_add_default_task(OLED_UI_FLAG_BAT_CHARGE);
+  else OLED_UI_add_default_task(OLED_UI_FLAG_BAT_CLR_CHARGE);
+#ifdef OLED_0_91
   // 无论电量等级是否变化都给出电量是否浮动
   if ( isFloating ) {
     OLED_Set_Pos(BMP_StartX + 29, 0);
@@ -143,4 +145,5 @@ void BATTERY_DrawBMP( void )
   // 无论电量等级是否变化都输出ADC值
   OLED_Set_Pos(BMP_StartX + 4, 3);
   OLED_ShowNum(BMP_StartX + 4, 3, BAT_adcVal, 4);
+#endif
 }

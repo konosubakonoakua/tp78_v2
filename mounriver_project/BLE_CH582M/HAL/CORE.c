@@ -62,7 +62,9 @@ __HIGH_CODE
 void TP78Reinit(uint8_t mode, enum LP_Type lp_type)
 {
   if (mode == 0) {  // 进入睡眠
+#if (defined HAL_WDG) && (HAL_WDG == TRUE)
     WWDG_ResetCfg(DISABLE); // 关看门狗
+#endif
     Row_GPIO_(SetBits)(Row_Pin_ALL);  // 唤醒条件
 #if (defined HAL_OLED) && (HAL_OLED == TRUE)
     OLED_WR_Byte(0xAE, OLED_CMD);  // OLED display off
@@ -97,7 +99,9 @@ void TP78Reinit(uint8_t mode, enum LP_Type lp_type)
 #if ((defined HAL_MPR121_CAPMOUSE) && (HAL_MPR121_CAPMOUSE == TRUE)) || ((defined HAL_MPR121_TOUCHBAR) && (HAL_MPR121_TOUCHBAR == TRUE))  // MPR121需要上电延迟
     MPR121_WriteReg(MPR121_REG_FG_CDT, 0x24);
 #endif
+#if (defined HAL_WDG) && (HAL_WDG == TRUE)
       WWDG_ResetCfg(ENABLE);  // 开看门狗
+#endif
     } else SoftReset();
   }
 }

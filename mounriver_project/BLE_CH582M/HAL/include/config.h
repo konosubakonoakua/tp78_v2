@@ -88,6 +88,9 @@
 #ifndef HAL_LED
 #define HAL_LED											FALSE         // 板载LED
 #endif
+#ifndef HAL_WDG
+#define HAL_WDG                     FALSE         // 看门狗 - 默认关闭
+#endif
 #ifndef HAL_USB
 #define HAL_USB                     TRUE          // USB
 #endif
